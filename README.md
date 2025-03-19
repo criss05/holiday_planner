@@ -1,40 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Holiday Planner
+# Description
+This Repository will contain description and implementation about the holiday entity, that refers to the time off from work or school. It includes attributes as start and end date, destination, type of holiday, etc.
 
-## Getting Started
+# Features
+The Holiday can have the following attributes:
+  
+  id: Unique identifier
 
-First, run the development server:
+  Destination: Location of the holiday
+  
+  Start_date: Beginning of the holiday
+  
+  End_date: End of the holiday
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+  Number of people: How many people will participate in that holiday
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+  Transport: The type of transport that will be used
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+  Activities: A list with activities that can be done every day
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+# Let's see how should the application look like (Figma version)
+This should The Home Page (after the user connects to its account).
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+![image](https://github.com/user-attachments/assets/62f0e69f-c464-464f-9c5b-1a9a5e0f9c34)
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+ 
+ From this page, when Clicking the Sort arrow it should open an sorting menu and When clicking the menu button should open an menu (containing a kind of filtering).
+ 
+ ![image](https://github.com/user-attachments/assets/ff640649-5eb8-42f5-a897-582abae5ef3d)
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+ Then, from the Home Page the user can add or update a holiday. For adding, the Edit page will be empty, for edit, the Edit page will contain the actual informations about the holiday. There is an TODO list so the user can add its activities. If he wants to add another activity or another day, another page will appear. The user can also see the details about each activity and delete it.
+ 
+![image](https://github.com/user-attachments/assets/94657c48-e75e-43f8-9ac1-1902ffe79002)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+From the Home page, the user can also see the informations about the holiday by clicking the info icon. From the Info page, the user can also go to Edit Page by clicking the Edit Button.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+![image](https://github.com/user-attachments/assets/2f869dbd-a4c0-4094-a105-0184e5dab2a1)
