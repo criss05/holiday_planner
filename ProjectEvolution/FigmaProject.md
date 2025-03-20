@@ -2,7 +2,7 @@
 # Description
 This Repository will contain description and implementation about the holiday entity, that refers to the time off from work or school. It includes attributes as start and end date, destination, type of holiday, etc.
 
-# Features
+# Attributes
 The Holiday can have the following attributes:
   
   id: Unique identifier
