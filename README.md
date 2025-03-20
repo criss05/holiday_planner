@@ -1,6 +1,6 @@
 # First Page ready
 # Description
-In the 3 days I worked on my first page of the Holiday Planner application. I started with the Front-end because I wanted to be something different. I used next.js with JavaScript.
+In the last 3 days I worked on my first page of the Holiday Planner application. I started with the Front-end because I wanted to be something different. I used next.js with JavaScript.
 
 # Sort, Filter and Delete Done
 
