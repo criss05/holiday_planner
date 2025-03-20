@@ -1,5 +1,5 @@
 const initialHolidays = [
-    { name: "Beach Getaway", destination: "Hawaii", startDate: "10/06/2025", endDate: "20/10/2025", transport: "Flight" },
+    { name: "Beach Getaway", destination: "Hawaii", startDate: "10/06/2024", endDate: "20/10/2024", transport: "Flight" },
     { name: "Mountain Retreat", destination: "Swiss Alps", startDate: "15/07/2025", endDate: "25/07/2025", transport: "Train" },
     { name: "City Adventure", destination: "New York", startDate: "05/08/2025", endDate: "15/08/2025", transport: "Flight" },
     { name: "Safari Experience", destination: "Kenya", startDate: "12/09/2025", endDate: "22/09/2025", transport: "Jeep" },
