@@ -15,6 +15,7 @@ export default function HolidayPlanner() {
   const [isDeletePopUpVisible, setIsDeletePopUpVisible] = useState(false);
   const [holidayToDelete, setHolidayToDelete] = useState(null);
   const [filter, setFilter] = useState("All");
+  const [isMenunVisible, setIsMenuVisible] = useState(false);
 
   const handleDeleteAction = (name) => {
     setHolidayToDelete(name);
@@ -30,16 +31,20 @@ export default function HolidayPlanner() {
     setIsDeletePopUpVisible(false);
   }
 
-  const handleFilterChange = (newFilter)=>{
+  const handleFilterChange = (newFilter) => {
     setFilter(newFilter);
+  }
+
+  const toggleMenu = () => {
+    setIsMenuVisible(!isMenunVisible);
   }
 
   const filteredHolidays = useMemo(() => {
     switch (filter) {
       case "Done":
-        return holidays.filter(holiday => holiday.status === "Done");
+        return holidays.filter(holiday => parseDate(holiday.endDate) <= new Date());
       case "Upcoming":
-        return holidays.filter(holiday => holiday.status === "Upcoming");
+        return holidays.filter(holiday => parseDate(holiday.endDate) >= new Date());
       case "All":
       default:
         return holidays;
@@ -66,21 +71,21 @@ export default function HolidayPlanner() {
   }, [sortBy, filteredHolidays]);
 
 
-
-
   return (
-    <div className="min-h-screen bg-[#F2F2F2]">
+    <div className="min-h-screen tarnsition-all duration-300">
       {/* Navbar */}
-      <Header onFilterChange={handleFilterChange}/>
+      <Header onFilterChange={handleFilterChange} onToggleMenu={toggleMenu} isMenuVisible={isMenunVisible} />
 
       {/* Sort Dropdown */}
-      <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
+      <div className={`transition-transform duration-300 ${isMenunVisible ? "ml-50" : "ml-0"}`}>
+        <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
 
-      {/* Holiday Cards Grid */}
-      <HolidayGrid holidays={sortedHolidays} onDelete={handleDeleteAction} />
+        {/* Holiday Cards Grid */}
+        <HolidayGrid holidays={sortedHolidays} onDelete={handleDeleteAction} />
 
-      {/* Floating AddButton */}
-      <AddButton />
+        {/* Floating AddButton */}
+        <AddButton />
+      </div>
 
       <DeletePopup
         isVisible={isDeletePopUpVisible}
