@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
-import Header from "@/components/UI/Header";
-import SortDropdown from "@/components/UI/SortDropdown";
-import HolidayGrid from "@/components/Holidays/HolidayGrid";
+import Header from "@/components/UI/HomePage/Header";
+import SortDropdown from "@/components/UI/HomePage/SortDropdown";
+import HolidayGrid from "@/components/Holidays/HomePage/HolidayGrid";
 import initialHolidays from "@/data/Holidays";
-import AddButton from "@/components/UI/AddButton";
+import AddButton from "@/components/UI/HomePage/AddButton";
 import parseDate from "@/utils/ParseDate";
 import { DeleteHoliday } from "@/utils/DeleteHoliday";
-import DeletePopup from "@/components/Holidays/DeletePopUp";
+import DeletePopup from "@/components/Holidays/HomePage/DeletePopUp";
 
 
 export default function HolidayPlanner() {
