@@ -6,7 +6,7 @@ export default function AddPage() {
     return (
         <div className="min-h-screen">
             <HeaderAdd />
-            <div className="w-3/5 flex flex-col justify-between p-15">
+            <div className="w-3/5 flex flex-col justify-between p-20">
                 <InformationFields text="Holiday Name" />
                 <InformationFields text="Where would you like to travel?" icon={<FaMapMarkedAlt />} />
                 <InformationFields text="What type of transport would you like to use?" />
