@@ -21,7 +21,9 @@ export default function InformationFields({ text, icon }) {
                         </div>
                     </div>
                 ) : text.toLowerCase().includes("when") ? (
-                    <Calendar />
+                    <div className="flex justify-items-center w-full">
+                        <Calendar />
+                    </div>
                 ) : (
                     <InputBox />
                 )
