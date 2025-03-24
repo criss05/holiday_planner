@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import Header from "@/components/UI/HomePage/Header";
+import Header from "@/components/UI/HomePage/HeaderHome";
 import SortDropdown from "@/components/UI/HomePage/SortDropdown";
 import HolidayGrid from "@/components/Holidays/HomePage/HolidayGrid";
 import initialHolidays from "@/data/Holidays";
