@@ -25,3 +25,25 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.custom-calendar .react-datepicker__month-container {
+  width: 100%;
+}
+
+.custom-calendar .react-datepicker__header {
+  padding: 5px;
+  font-size: 16px;
+}
+
+.custom-calendar .react-datepicker__day-names,
+.custom-calendar .react-datepicker__week {
+  display: flex;
+  justify-content: space-between;
+}
+
+.custom-calendar .react-datepicker__day {
+  width: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
