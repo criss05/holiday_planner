@@ -1,4 +1,4 @@
-export default function InputBox({ text}) {
+export default function InputBox() {
     return (
         <input
             type="text"
