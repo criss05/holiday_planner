@@ -1,6 +1,9 @@
 import HeaderAdd from "@/components/UI/AddPage/HeaderAdd"
 import InformationFields from "@/components/UI/AddPage/InformationFields";
 import { FaMapMarkedAlt } from "react-icons/fa";
+import DoneButton from "@/components/UI/AddPage/DoneButton";
+import CancelButton from "@/components/UI/AddPage/CancelButton";
+
 
 export default function AddPage() {
     return (
@@ -12,6 +15,10 @@ export default function AddPage() {
                 <InformationFields text="What type of transport would you like to use?" />
                 <InformationFields text="When would you like to travel?" />
                 <InformationFields text="What is the type of accommodation you would prefer?" />
+                <div className="flex justify-left gap-20">
+                    <DoneButton />
+                    <CancelButton />
+                </div>
             </div>
 
 
