@@ -21,7 +21,7 @@ export default function InformationFields({ text, icon }) {
                             <RadioMenu options={transport} />
                         </div>
                         <div className="flex align-center items-center">
-                            <MiddleInputBox text="Price"/>
+                            <MiddleInputBox text="Price" />
                         </div>
                     </div>
                 ) : text.toLowerCase().includes("when") ? (
@@ -34,15 +34,16 @@ export default function InformationFields({ text, icon }) {
                             <RadioMenu options={accommodation} />
                         </div>
                         <div>
-                            <MiddleInputBox text="Price"/>
-                            <MiddleInputBox text="Name"/>
-                            <MiddleInputBox text="Location"/>
+                            <MiddleInputBox text="Price" />
+                            <MiddleInputBox text="Name" />
+                            <MiddleInputBox text="Location" />
                         </div>
                     </div>
                 ) : (
                     <div></div>
                 )
                 }
+                
             </div>
         </div>
     );
