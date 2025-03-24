@@ -1,9 +1,13 @@
 import Calendar from "./Calendar";
 import InputBox from "./InputBox";
-import TransportOptions from "./TransportOptions";
-import TransportPrice from "./TransportPriceBox";
+import MiddleInputBox from "./MiddleInputBox";
+import RadioMenu from "./RadioMenu";
+
 
 export default function InformationFields({ text, icon }) {
+    const transport = ["Car", "Plane", "Train", "Bus", "Ship"]
+    const accommodation = ["Hotel", "Motel", "Hostel", "Apartment", "Cabin", "Resort", "Villa", "Campsite"]
+
     return (
         <div className="grid grid-cols-2 gap-6 pb-10">
             <label className="text-gray-800 font-semibold text-3xl pr-10">{text}:</label>
@@ -14,18 +18,29 @@ export default function InformationFields({ text, icon }) {
                 ) : text.toLowerCase().includes("transport") ? (
                     <div className="grid grid-cols-2">
                         <div className="pl-3">
-                            <TransportOptions />
+                            <RadioMenu options={transport} />
                         </div>
                         <div className="flex align-center items-center">
-                            <TransportPrice />
+                            <MiddleInputBox text="Price"/>
                         </div>
                     </div>
                 ) : text.toLowerCase().includes("when") ? (
                     <div className="flex justify-items-center w-full">
                         <Calendar />
                     </div>
+                ) : text.toLowerCase().includes("accommodation") ? (
+                    <div className="grid grid-cols-2">
+                        <div className="pl-3">
+                            <RadioMenu options={accommodation} />
+                        </div>
+                        <div>
+                            <MiddleInputBox text="Price"/>
+                            <MiddleInputBox text="Name"/>
+                            <MiddleInputBox text="Location"/>
+                        </div>
+                    </div>
                 ) : (
-                    <InputBox />
+                    <div></div>
                 )
                 }
             </div>
