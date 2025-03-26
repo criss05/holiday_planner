@@ -1,7 +1,6 @@
 import { FaEdit, FaTrash, FaInfoCircle } from "react-icons/fa";
-import Link from "next/link";
 
-export default function HolidayCard({ holiday, onDelete, onEdit }) {
+export default function HolidayCard({ holiday, onDelete, onEdit, onView }) {
     return (
         <div key={holiday.name} className="bg-[#D3E7FF] shadow-lg flex flex-col justify-between h-64">
             <h2 className="text-xl font-bold bg-[#A7CFFF] text-center py-3">{holiday.name}</h2>
@@ -18,11 +17,9 @@ export default function HolidayCard({ holiday, onDelete, onEdit }) {
                 <div className="cursor-pointer bg-[#73DAFF] p-3 rounded-md" onClick={() => onDelete(holiday.name)}>
                     <FaTrash className="text-lg" />
                 </div>
-                <Link href="/DetailsPage">
-                    <div className="cursor-pointer bg-[#73DAFF] p-3 rounded-md">
+                    <div className="cursor-pointer bg-[#73DAFF] p-3 rounded-md" onClick={() => onView(holiday)}>
                         <FaInfoCircle className="text-lg" />
                     </div>
-                </Link>
             </div>
         </div>
     );
