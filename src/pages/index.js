@@ -7,6 +7,7 @@ import AddButton from "@/components/UI/HomePage/AddButton";
 import parseDate from "@/utils/ParseDate";
 import { DeleteHoliday } from "@/utils/DeleteHoliday";
 import DeletePopup from "@/components/Holidays/HomePage/DeletePopUp";
+import AddPage from "./AddPage";
 
 
 export default function HolidayPlanner() {
@@ -16,7 +17,7 @@ export default function HolidayPlanner() {
   const [holidayToDelete, setHolidayToDelete] = useState(null);
   const [filter, setFilter] = useState("All");
   const [isMenunVisible, setIsMenuVisible] = useState(false);
-  const [isAddPageVisible, setIsAddPageVisible] = useState(false); 
+  const [isAddPageVisible, setIsAddPageVisible] = useState(false);
 
 
   const handleDeleteAction = (name) => {
@@ -80,28 +81,29 @@ export default function HolidayPlanner() {
 
   return (
     <div className="min-h-screen tarnsition-all duration-300">
-      {/* Navbar */}
-      <Header onFilterChange={handleFilterChange} onToggleMenu={toggleMenu} isMenuVisible={isMenunVisible} />
+      {!isAddPageVisible ? (
+        <>
+          {/* Navbar */}
+          <Header onFilterChange={handleFilterChange} onToggleMenu={toggleMenu} isMenuVisible={isMenunVisible} />
 
-      {/* Sort Dropdown */}
-      <div className={`transition-transform duration-300 ${isMenunVisible ? "ml-50" : "ml-0"}`}>
-        <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
+          {/* Sort Dropdown */}
+          <div className={`transition-transform duration-300 ${isMenunVisible ? "ml-50" : "ml-0"}`}>
+            <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
 
-        {/* Holiday Cards Grid */}
-        <HolidayGrid holidays={sortedHolidays} onDelete={handleDeleteAction} />
+            {/* Holiday Cards Grid */}
+            <HolidayGrid holidays={sortedHolidays} onDelete={handleDeleteAction} />
 
-        {/* Floating AddButton */}
-        <AddButton />
-      </div>
+            {/* Floating AddButton */}
+            <AddButton setIsAddPageVisible={setIsAddPageVisible} />
+          </div>
 
-      {isAddPageVisible && <AddPage onAddHoliday={handleAddHoliday} />}
-
-      <DeletePopup
-        isVisible={isDeletePopUpVisible}
-        onClose={handleCancelDelete}
-        onDelete={handleComfirmDelete}
-        holidayName={holidayToDelete}
-      />
+          {/* Delete Popup */}
+          <DeletePopup isVisible={isDeletePopUpVisible} onClose={handleCancelDelete} onDelete={handleComfirmDelete} holidayName={holidayToDelete} />
+        </>
+      ) : (
+        /* Show AddPage instead of HolidayPlanner */
+        <AddPage setIsAddPageVisible={setIsAddPageVisible} handleAddHoliday={handleAddHoliday}/>
+      )}
     </div>
   );
 }
