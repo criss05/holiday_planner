@@ -16,7 +16,7 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
     const [holiday, setHoliday] = useState({
         name: "",
         destination: "",
-        startDate:"",
+        startDate: "",
         endDate: "",
         transport: "",
         transport_price: "",
@@ -41,7 +41,9 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
                 <div className="grid grid-cols-2 gap-6">
                     <label className="text-gray-800 font-semibold text-3xl">Holiday Name:</label>
                     <div className="flex items-center bg-blue-100 border border-blue-300 px-3 py-2">
-                        <InputBox onChange={(e) => updateHoliday("name", e.target.value)} />
+                        <InputBox value={holiday.name}
+                            onChange={(value) => updateHoliday("name", value)}
+                            name="name" />
                     </div>
                 </div>
 
@@ -52,7 +54,9 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
                     </label>
                     <div className="flex items-center bg-blue-100 border border-blue-300 px-3 py-2">
                         <FaMapMarkedAlt className="mr-2 text-2xl" />
-                        <InputBox onChange={(e) => updateHoliday("destination", e.target.value)} />
+                        <InputBox value={holiday.destination}
+                            onChange={(value) => updateHoliday("destination", value)}
+                            name="destination" />
                     </div>
                 </div>
 
@@ -62,9 +66,9 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
                     <div className="flex  bg-blue-100 border border-blue-300 px-3 py-2">
                         <div className="grid grid-cols-2 gap-25 items-center">
                             <div className="pl-8">
-                                <RadioMenu options={transportOptions} onChange={(value) => updateHoliday("transport", value)} />
+                                <RadioMenu options={transportOptions} value={holiday.transport} onChange={(value) => updateHoliday("transport", value)} name="transport"/>
                             </div>
-                            <MiddleInputBox text="Price" onChange={(e) => updateHoliday("transport_price", e.target.value)} />
+                            <MiddleInputBox text="Price" value={holiday.transport_price} onChange={(e) => updateHoliday("transport_price", e.target.value)} />
                         </div>
                     </div>
                 </div>
@@ -90,12 +94,12 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
                     <div className="flex  bg-blue-100 border border-blue-300 px-3 py-2">
                         <div className="grid grid-cols-2">
                             <div className="pl-3">
-                                <RadioMenu options={accommodationOptions} onChange={(value) => updateHoliday("accommodation", value)} />
+                                <RadioMenu options={accommodationOptions} value={holiday.accommodation} onChange={(value) => updateHoliday("accommodation", value)} name="accommodetion"/>
                             </div>
                             <div>
-                                <MiddleInputBox text="Price" onChange={(e) => updateHoliday("accommodation_price", e.target.value)} />
-                                <MiddleInputBox text="Name" onChange={(e) => updateHoliday("accommodation_name", e.target.value)} />
-                                <MiddleInputBox text="Location" onChange={(e) => updateHoliday("accommodation_location", e.target.value)} />
+                                <MiddleInputBox text="Price" value={holiday.accommodation_price} onChange={(e) => updateHoliday("accommodation_price", e.target.value)} />
+                                <MiddleInputBox text="Name" value={holiday.accommodation_name} onChange={(e) => updateHoliday("accommodation_name", e.target.value)} />
+                                <MiddleInputBox text="Location" value={holiday.accommodation_location} onChange={(e) => updateHoliday("accommodation_location", e.target.value)} />
                             </div>
                         </div>
                     </div>
