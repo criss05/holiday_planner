@@ -20,7 +20,7 @@ export default function InformationFields({ text, icon }) {
                         <div className="pl-3">
                             <RadioMenu options={transport} />
                         </div>
-                        <div className="flex align-center items-center">
+                        <div>
                             <MiddleInputBox text="Price" />
                         </div>
                     </div>
