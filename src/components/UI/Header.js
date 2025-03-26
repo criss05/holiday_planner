@@ -1,18 +1,11 @@
-import { FaUser, FaBars } from "react-icons/fa";
-import FilterMenu from "./HomePage/FilterMenu";
+import { FaUser } from "react-icons/fa";
 
-export default function Header({onFilterChange, onToggleMenu, isMenuVisible}) {
+export default function HeaderAdd() {
     return (
         <header className="bg-[#8CD3EF] p-3 flex justify-between items-center">
-            <FaBars className="text-2xl cursor-pointer" onClick={onToggleMenu} />
+            <div></div>
             <h1 className="text-3xl font-roboto font-bold">Holiday Planner</h1>
             <FaUser className="text-2xl" />
-
-            <FilterMenu
-                isVisible={isMenuVisible}
-                onClose={onToggleMenu}
-                onFilterChange={onFilterChange}
-            />
         </header>
     );
 }
