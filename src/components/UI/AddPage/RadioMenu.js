@@ -2,24 +2,18 @@ import { useState } from "react";
 
 
 
-export default function RadioMenu({ options }) {
-    const [selectedOption, setSelectedOption] = useState("");
-
-    const handleOptionChange = (e) => {
-        setSelectedOption(e.target.value);
-    }
-
+export default function RadioMenu({ options, value, onChange, name }) {
     return (
         <form>
             {options.map((option) => (
-                <div>
+                <div key="option">
                     <input
                         type="radio"
                         id={option.toLowerCase()}
-                        name={option}
+                        name={name}
                         value={option}
-                        checked={selectedOption === option}
-                        onChange={handleOptionChange}
+                        checked={value === option}
+                        onChange={(e) => onChange(e.target.value)}
                     />
                     <strong>
                         <label className="px-2 text-xl" htmlFor={option.toLowerCase()}>
