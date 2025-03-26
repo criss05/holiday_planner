@@ -1,8 +1,10 @@
-import Header from "@/components/UI/HomePage/HeaderHome"
+import Header from "@/components/UI/Header"
 
-export default function DetailsPage(){
+export default function DetailsPage() {
 
     return (
-        <Header />
+        <div className="min-h-screen">
+            <Header />
+        </div>
     )
 }
