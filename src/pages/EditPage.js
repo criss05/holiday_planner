@@ -34,7 +34,8 @@ export default function EditPage({ holiday, setIsEditPageVisible, setHolidays })
                     <div className="flex items-center bg-blue-100 border border-blue-300 px-3 py-2">
                         <InputBox value={editedHoliday.name}
                             onChange={(value) => updateHoliday("name", value)}
-                            name="name" />
+                            name="name" 
+                            />
                     </div>
                 </div>
 
@@ -46,7 +47,8 @@ export default function EditPage({ holiday, setIsEditPageVisible, setHolidays })
                     <div className="flex items-center bg-blue-100 border border-blue-300 px-3 py-2">
                         <InputBox value={editedHoliday.destination}
                             onChange={(value) => updateHoliday("destination", value)}
-                            name="destination" />
+                            name="destination" 
+                            />
                     </div>
                 </div>
 
