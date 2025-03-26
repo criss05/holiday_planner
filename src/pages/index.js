@@ -9,6 +9,7 @@ import { DeleteHoliday } from "@/utils/DeleteHoliday";
 import DeletePopup from "@/components/Holidays/HomePage/DeletePopUp";
 import AddPage from "./AddPage";
 import EditPage from "./EditPage";
+import DetailsPage from "./DetailsPage";
 
 
 export default function HolidayPlanner() {
@@ -20,7 +21,9 @@ export default function HolidayPlanner() {
   const [isMenunVisible, setIsMenuVisible] = useState(false);
   const [isAddPageVisible, setIsAddPageVisible] = useState(false);
   const [isEditPageVisible, setIsEditPageVisible] = useState(false);
+  const [isDetailsPageVisible, setIsDetailsPageVisible] = useState(false);
   const [holidayToEdit, setHolidayToEdit] = useState(null);
+  const [holidayToView, setHolidayToView] = useState(null);
 
 
   const handleDeleteAction = (name) => {
@@ -83,28 +86,40 @@ export default function HolidayPlanner() {
 
 
   return (
-    <div className="min-h-screen tarnsition-all duration-300" >
+    <div className="min-h-screen tarnsition-all duration-300">
       {isEditPageVisible ? (
-  <EditPage 
-    holiday={holidayToEdit} 
-    setIsEditPageVisible={setIsEditPageVisible}
-    setHolidays={setHolidays}
-  />
-) : isAddPageVisible ? (
-  <AddPage setIsAddPageVisible={setIsAddPageVisible} handleAddHoliday={handleAddHoliday}/>
-) : (
-  <>
-    <Header onFilterChange={handleFilterChange} onToggleMenu={toggleMenu} isMenuVisible={isMenunVisible} />
-    <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
-    <HolidayGrid holidays={sortedHolidays} onDelete={handleDeleteAction} onEdit={(holiday) => {
-      setHolidayToEdit(holiday);
-      setIsEditPageVisible(true);
-    }}/>
-    <AddButton setIsAddPageVisible={setIsAddPageVisible} />
-    <DeletePopup isVisible={isDeletePopUpVisible} onClose={handleCancelDelete} onDelete={handleComfirmDelete} holidayName={holidayToDelete} />
-  </>
-)}
-
-    </div >
+        <EditPage
+          holiday={holidayToEdit}
+          setIsEditPageVisible={setIsEditPageVisible}
+          setHolidays={setHolidays}
+        />
+      ) : isAddPageVisible ? (
+        <AddPage setIsAddPageVisible={setIsAddPageVisible} handleAddHoliday={handleAddHoliday} />
+      ) : isDetailsPageVisible ? (
+        <DetailsPage
+          holiday={holidayToView}
+          setIsDetailsPageVisible={setIsDetailsPageVisible}
+        />
+      ) : (
+        <>
+          <Header onFilterChange={handleFilterChange} onToggleMenu={toggleMenu} isMenuVisible={isMenunVisible} />
+          <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
+          <HolidayGrid
+            holidays={sortedHolidays}
+            onDelete={handleDeleteAction}
+            onEdit={(holiday) => {
+              setHolidayToEdit(holiday);
+              setIsEditPageVisible(true);
+            }}
+            onView={(holiday) => {
+              setHolidayToView(holiday);
+              setIsDetailsPageVisible(true);
+            }}
+          />
+          <AddButton setIsAddPageVisible={setIsAddPageVisible} />
+          <DeletePopup isVisible={isDeletePopUpVisible} onClose={handleCancelDelete} onDelete={handleComfirmDelete} holidayName={holidayToDelete} />
+        </>
+      )}
+    </div>
   );
 }
