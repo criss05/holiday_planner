@@ -3,10 +3,24 @@ import InformationFields from "@/components/UI/AddPage/InformationFields";
 import { FaMapMarkedAlt } from "react-icons/fa";
 import DoneButton from "@/components/UI/AddPage/DoneButton";
 import CancelButton from "@/components/UI/AddPage/CancelButton";
+import { useState } from "react";
 
-export default function AddPage() {
+export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
+    const [holiday, setHoliday] = useState({
+        name: "",
+        destination: "",
+        startDate: "",
+        endDate: "",
+        transport: "",
+        transport_price: "",
+        accommodation: "",
+        accommodation_name: "",
+        accommodation_price: "",
+        accommodation_location: "",
+    });
 
     return (
+
         <div className="min-h-screen">
             <Header />
             <div className="flex flex-row justify-between h-screen">
@@ -17,8 +31,8 @@ export default function AddPage() {
                     <InformationFields text="When would you like to travel?"  />
                     <InformationFields text="What is the type of accommodation you would prefer?"  />
                     <div className="flex justify-left gap-20 pb-10">
-                        <DoneButton/>
-                        <CancelButton />
+                        <DoneButton onClick={() => handleAddHoliday(holiday)} />
+                        <CancelButton onClick={() => setIsAddPageVisible(false)} />
                     </div>
                 </div>
             </div>
