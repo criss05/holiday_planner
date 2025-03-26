@@ -1,4 +1,4 @@
-export default function InputBox({value, onChange, name}) {
+export default function InputBox({value, onChange, name }) {
     return (
         <input
             type="text"
