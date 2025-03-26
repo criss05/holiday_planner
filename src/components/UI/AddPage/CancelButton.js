@@ -1,11 +1,8 @@
-import Link from 'next/link';
-
-export default function CancelButton() {
+export default function CancelButton({ onClick }) {
     return (
-        <Link href="/">
-            <button className="bg-[#73DAFF] rounded-2xl shadow-lg h-10 w-23">
-                Cancel
-            </button>
-        </Link>
+        <button className="bg-[#73DAFF] rounded-2xl shadow-lg h-10 w-23"
+            onClick={onClick}>
+            Cancel
+        </button>
     );
 }
