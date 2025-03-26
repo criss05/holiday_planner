@@ -16,6 +16,8 @@ export default function HolidayPlanner() {
   const [holidayToDelete, setHolidayToDelete] = useState(null);
   const [filter, setFilter] = useState("All");
   const [isMenunVisible, setIsMenuVisible] = useState(false);
+  const [isAddPageVisible, setIsAddPageVisible] = useState(false); 
+
 
   const handleDeleteAction = (name) => {
     setHolidayToDelete(name);
@@ -70,6 +72,11 @@ export default function HolidayPlanner() {
     });
   }, [sortBy, filteredHolidays]);
 
+  const handleAddHoliday = (newHoliday) => {
+    setHolidays((prevHolidays) => [...prevHolidays, newHoliday]);
+    setIsAddPageVisible(false);
+  };
+
 
   return (
     <div className="min-h-screen tarnsition-all duration-300">
@@ -86,6 +93,8 @@ export default function HolidayPlanner() {
         {/* Floating AddButton */}
         <AddButton />
       </div>
+
+      {isAddPageVisible && <AddPage onAddHoliday={handleAddHoliday} />}
 
       <DeletePopup
         isVisible={isDeletePopUpVisible}
