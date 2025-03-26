@@ -26,7 +26,7 @@ export default function InformationFields({ text, icon }) {
                     </div>
                 ) : text.toLowerCase().includes("when") ? (
                     <div className="flex justify-items-center w-full">
-                        <Calendar />
+                        <Calendar startDate={new Date()} endDate={new Date()}/>
                     </div>
                 ) : text.toLowerCase().includes("accommodation") ? (
                     <div className="grid grid-cols-2">
