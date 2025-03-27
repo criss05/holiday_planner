@@ -8,7 +8,6 @@ import { FaMapMarkedAlt } from "react-icons/fa";
 import DoneButton from "@/components/UI/AddPage/DoneButton";
 import CancelButton from "@/components/UI/AddPage/CancelButton";
 
-
 export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
     const transportOptions = ["Car", "Plane", "Train", "Bus", "Ship"];
     const accommodationOptions = ["Hotel", "Motel", "Hostel", "Apartment", "Cabin", "Resort", "Villa", "Campsite"];
@@ -31,6 +30,43 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
             ...prev,
             [field]: value
         }));
+    };
+
+    const isValidPrice = (price) => {
+        return /^\d+(\.\d{1,2})?$/.test(price); // Allows whole numbers and decimals (e.g., 100 or 99.99)
+    };
+
+    const validateForm = () => {
+        const {
+            name,
+            destination,
+            startDate,
+            endDate,
+            transport,
+            transport_price,
+            accommodation,
+            accommodation_name,
+            accommodation_price,
+            accommodation_location,
+        } = holiday;
+
+        if (!name || !destination || !startDate || !endDate || !transport || !accommodation || !accommodation_name || !accommodation_location) {
+            alert("All fields must be filled out.");
+            return false;
+        }
+
+        if (!isValidPrice(transport_price) || !isValidPrice(accommodation_price)) {
+            alert("Price fields must be valid numbers.");
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleSubmit = () => {
+        if (validateForm()) {
+            handleAddHoliday(holiday);
+        }
     };
 
     return (
@@ -63,12 +99,16 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
                 {/* Transport Type */}
                 <div className="grid grid-cols-2 gap-6">
                     <label className="text-gray-800 font-semibold text-3xl">What type of transport would you like to use?</label>
-                    <div className="flex  bg-blue-100 border border-blue-300 px-3 py-2">
+                    <div className="flex bg-blue-100 border border-blue-300 px-3 py-2">
                         <div className="grid grid-cols-2 gap-25 items-center">
                             <div className="pl-8">
-                                <RadioMenu options={transportOptions} value={holiday.transport} onChange={(value) => updateHoliday("transport", value)} name="transport"/>
+                                <RadioMenu options={transportOptions} value={holiday.transport} onChange={(value) => updateHoliday("transport", value)} name="transport" />
                             </div>
-                            <MiddleInputBox text="Price" value={holiday.transport_price} onChange={(e) => updateHoliday("transport_price", e.target.value)} />
+                            <MiddleInputBox 
+                                text="Price" 
+                                value={holiday.transport_price} 
+                                onChange={(e) => updateHoliday("transport_price", e.target.value)} 
+                            />
                         </div>
                     </div>
                 </div>
@@ -76,7 +116,7 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
                 {/* Travel Dates */}
                 <div className="grid grid-cols-2 gap-6">
                     <label className="text-gray-800 font-semibold text-3xl">When would you like to travel?</label>
-                    <div className="flex  bg-blue-100 border border-blue-300 px-3 py-2">
+                    <div className="flex bg-blue-100 border border-blue-300 px-3 py-2">
                         <Calendar
                             startDate={holiday.startDate}
                             endDate={holiday.endDate}
@@ -91,15 +131,27 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
                 {/* Accommodation Type */}
                 <div className="grid grid-cols-2 gap-6">
                     <label className="text-gray-800 font-semibold text-3xl">What is the type of accommodation you would prefer?</label>
-                    <div className="flex  bg-blue-100 border border-blue-300 px-3 py-2">
+                    <div className="flex bg-blue-100 border border-blue-300 px-3 py-2">
                         <div className="grid grid-cols-2">
                             <div className="pl-3">
-                                <RadioMenu options={accommodationOptions} value={holiday.accommodation} onChange={(value) => updateHoliday("accommodation", value)} name="accommodetion"/>
+                                <RadioMenu options={accommodationOptions} value={holiday.accommodation} onChange={(value) => updateHoliday("accommodation", value)} name="accommodation" />
                             </div>
                             <div>
-                                <MiddleInputBox text="Price" value={holiday.accommodation_price} onChange={(e) => updateHoliday("accommodation_price", e.target.value)} />
-                                <MiddleInputBox text="Name" value={holiday.accommodation_name} onChange={(e) => updateHoliday("accommodation_name", e.target.value)} />
-                                <MiddleInputBox text="Location" value={holiday.accommodation_location} onChange={(e) => updateHoliday("accommodation_location", e.target.value)} />
+                                <MiddleInputBox 
+                                    text="Price" 
+                                    value={holiday.accommodation_price} 
+                                    onChange={(e) => updateHoliday("accommodation_price", e.target.value)} 
+                                />
+                                <MiddleInputBox 
+                                    text="Name" 
+                                    value={holiday.accommodation_name} 
+                                    onChange={(e) => updateHoliday("accommodation_name", e.target.value)} 
+                                />
+                                <MiddleInputBox 
+                                    text="Location" 
+                                    value={holiday.accommodation_location} 
+                                    onChange={(e) => updateHoliday("accommodation_location", e.target.value)} 
+                                />
                             </div>
                         </div>
                     </div>
@@ -107,10 +159,10 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
 
                 {/* Buttons */}
                 <div className="flex justify-start gap-10 pt-4">
-                    <DoneButton onClick={() => handleAddHoliday(holiday)} />
+                    <DoneButton onClick={handleSubmit} />
                     <CancelButton onClick={() => setIsAddPageVisible(false)} />
                 </div>
             </div>
-        </div >
+        </div>
     );
 }
