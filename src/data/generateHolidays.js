@@ -5,8 +5,8 @@ import { faker } from "@faker-js/faker";
 export const generateRandomHoliday = () => {
   const holiday = {
     name: faker.commerce.productName(),
-    // destination: faker.address.city(),
-    // transport: faker.random.arrayElement(["Plane", "Train", "Car", "Bus", "Boat"]),
+    destination: "CLuj-Napoca",
+    transport:"Boat",
     startDate: faker.date.future().toISOString(),
     endDate: faker.date.past().toISOString(),
   };
