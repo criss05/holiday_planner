@@ -54,14 +54,16 @@ export default function HolidayPlanner() {
   const filteredHolidays = useMemo(() => {
     switch (filter) {
       case "Done":
-        return holidays.filter(holiday => parseDate(holiday.endDate) <= new Date());
+        return holidays.filter((holiday) => parseDate(holiday.endDate) <= new Date());
       case "Upcoming":
-        return holidays.filter(holiday => parseDate(holiday.endDate) >= new Date());
+        return holidays.filter((holiday) => parseDate(holiday.endDate) >= new Date());
       case "All":
       default:
         return holidays;
     }
   }, [filter, holidays]);
+
+
 
   const sortedHolidays = useMemo(() => {
     return [...filteredHolidays].sort((a, b) => {
@@ -90,12 +92,10 @@ export default function HolidayPlanner() {
   const totalPages = Math.ceil(sortedHolidays.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentHolidays = sortedHolidays.slice(
-    indexOfFirstItem, indexOfLastItem
-  );
+  const currentHolidays = sortedHolidays.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
-    <div className="min-h-screen tarnsition-all duration-300">
+    <div className="min-h-screen">
       {isEditPageVisible ? (
         <EditPage
           holiday={holidayToEdit}
@@ -111,10 +111,11 @@ export default function HolidayPlanner() {
         />
       ) : (
         <>
-          <Header onFilterChange={handleFilterChange} onToggleMenu={toggleMenu} isMenuVisible={isMenunVisible} />
+          <Header onFilterChange={handleFilterChange} onToggleMenu={toggleMenu} isMenuVisible={isMenunVisible} holidays={holidays} setHolidays={setHolidays} />
+          <div className={`min-h-screen transition-all duration-300 ${isMenunVisible ? 'pl-64' : ''}`}>
           <div className="flex justify-between">
-          <Pagination currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage}/>
-          <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
+            <Pagination currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} />
+            <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
           </div>
           <HolidayGrid
             holidays={currentHolidays}
@@ -129,9 +130,11 @@ export default function HolidayPlanner() {
             }}
           />
           <AddButton setIsAddPageVisible={setIsAddPageVisible} />
+          </div>
           <DeletePopup isVisible={isDeletePopUpVisible} onClose={handleCancelDelete} onDelete={handleComfirmDelete} holidayName={holidayToDelete} />
         </>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }
