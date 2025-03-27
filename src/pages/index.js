@@ -10,6 +10,7 @@ import DeletePopup from "@/components/Holidays/HomePage/DeletePopUp";
 import AddPage from "./AddPage";
 import EditPage from "./EditPage";
 import DetailsPage from "./DetailsPage";
+import Pagination from "@/components/UI/HomePage/Pagination";
 
 
 export default function HolidayPlanner() {
@@ -24,6 +25,8 @@ export default function HolidayPlanner() {
   const [isDetailsPageVisible, setIsDetailsPageVisible] = useState(false);
   const [holidayToEdit, setHolidayToEdit] = useState(null);
   const [holidayToView, setHolidayToView] = useState(null);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [currentPage, setCurrentPage] = useState(1);
 
 
   const handleDeleteAction = (name) => {
@@ -84,6 +87,12 @@ export default function HolidayPlanner() {
     setIsAddPageVisible(false);
   };
 
+  const totalPages = Math.ceil(sortedHolidays.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentHolidays = sortedHolidays.slice(
+    indexOfFirstItem, indexOfLastItem
+  );
 
   return (
     <div className="min-h-screen tarnsition-all duration-300">
@@ -103,9 +112,12 @@ export default function HolidayPlanner() {
       ) : (
         <>
           <Header onFilterChange={handleFilterChange} onToggleMenu={toggleMenu} isMenuVisible={isMenunVisible} />
+          <div className="flex justify-between">
+          <Pagination currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage}/>
           <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
+          </div>
           <HolidayGrid
-            holidays={sortedHolidays}
+            holidays={currentHolidays}
             onDelete={handleDeleteAction}
             onEdit={(holiday) => {
               setHolidayToEdit(holiday);
