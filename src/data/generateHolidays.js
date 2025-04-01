@@ -9,6 +9,8 @@ export const generateRandomHoliday = () => {
     transport:"Boat",
     startDate: faker.date.future().toISOString(),
     endDate: faker.date.past().toISOString(),
+    transport_price: 20,
+    accommodation_price: 100
   };
   return holiday;
 };
