@@ -146,4 +146,5 @@ app.delete("/holidays/:id", (req, res) => {
 export default app;
 
 if(process.env.NODE_ENV !== "test")
+    /* istanbul ignore next */
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

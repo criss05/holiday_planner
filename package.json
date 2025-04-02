@@ -9,8 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest --coverage",
-    "test:backend": "jest --config=jest.backend.config.js",
-    "test:frontend": "jest --config=jest.frontend.config.js"
+    "test:backend": "jest --config=jest.backend.config.js --coverage",
+    "test:frontend": "jest --config=jest.frontend.config.js --coverage"
   },
   "dependencies": {
     "chart.js": "^4.4.8",
