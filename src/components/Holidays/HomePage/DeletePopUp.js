@@ -12,7 +12,7 @@ export default function DeletePopup({ isVisible, onClose, onDelete, holidayName 
           <button
             className="bg-[#73DAFF] px-6 py-2 rounded-md"
             onClick={() => {
-              onDelete(holidayName);
+              onDelete();
               onClose();
             }}
           >

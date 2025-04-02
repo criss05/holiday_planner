@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Header from "@/components/UI/HomePage/HeaderHome";
 import SortDropdown from "@/components/UI/HomePage/SortDropdown";
 import HolidayGrid from "@/components/Holidays/HomePage/HolidayGrid";
@@ -17,7 +17,8 @@ export default function HolidayPlanner() {
   const [sortBy, setSortBy] = useState("Start Date");
   const [holidays, setHolidays] = useState(initialHolidays);
   const [isDeletePopUpVisible, setIsDeletePopUpVisible] = useState(false);
-  const [holidayToDelete, setHolidayToDelete] = useState(null);
+  const [holidayToDeleteId, setHolidayToDeleteId] = useState(null);
+  const [holidayToDeleteName, setHolidayToDeleteName] = useState(null);
   const [filter, setFilter] = useState("All");
   const [isMenunVisible, setIsMenuVisible] = useState(false);
   const [isAddPageVisible, setIsAddPageVisible] = useState(false);
@@ -29,15 +30,52 @@ export default function HolidayPlanner() {
   const [currentPage, setCurrentPage] = useState(1);
 
 
-  const handleDeleteAction = (name) => {
-    setHolidayToDelete(name);
+  useEffect(() => {
+    fetchHolidays();
+  }, [filter, sortBy]
+  );
+
+  const fetchHolidays = async () => {
+    try {
+      let url = `http://localhost:5000/holidays?filter=${filter}&sortBy=${sortBy}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch holidays");
+      }
+
+      const data = await response.json();
+      setHolidays(data);
+    }
+    catch (error) {
+      console.Error("Error fetching the holidays: ", error);
+    }
+  }
+
+  const handleDeleteAction = (id) => {
+    setHolidayToDeleteId(id);
+    setHolidayToDeleteName(holidays.find((h) => h.id === id).name);
     setIsDeletePopUpVisible(true);
   }
 
-  const handleComfirmDelete = (name) => {
-    DeleteHoliday(name, holidays, setHolidays)
-    setIsDeletePopUpVisible(false);
-  }
+  const handleConfirmDelete = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/holidays/${holidayToDeleteId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete holiday");
+      }
+
+      fetchHolidays();
+
+      setIsDeletePopUpVisible(false);
+    } catch (error) {
+      console.error("Error deleting the holiday:", error);
+    }
+  };
+
 
   const handleCancelDelete = () => {
     setIsDeletePopUpVisible(false);
@@ -51,48 +89,52 @@ export default function HolidayPlanner() {
     setIsMenuVisible(!isMenunVisible);
   }
 
-  const filteredHolidays = useMemo(() => {
-    switch (filter) {
-      case "Done":
-        return holidays.filter((holiday) => parseDate(holiday.endDate) <= new Date());
-      case "Upcoming":
-        return holidays.filter((holiday) => parseDate(holiday.endDate) >= new Date());
-      case "All":
-      default:
-        return holidays;
-    }
-  }, [filter, holidays]);
 
-
-
-  const sortedHolidays = useMemo(() => {
-    return [...filteredHolidays].sort((a, b) => {
-      switch (sortBy) {
-        case "Start Date":
-          return parseDate(a.startDate) - parseDate(b.startDate);
-        case "End Date":
-          return parseDate(a.endDate) - parseDate(b.endDate);
-        case "Destination":
-          return a.destination.localeCompare(b.destination);
-        case "Name":
-          return a.name.localeCompare(b.name);
-        case "Transport":
-          return a.transport.localeCompare(b.transport);
-        default:
-          return 0;
+  const handleAddHoliday = async (name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location) => {
+    try {
+      const response = await fetch("http://localhost:5000/holidays", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to add holiday: ");
       }
-    });
-  }, [sortBy, filteredHolidays]);
 
-  const handleAddHoliday = (newHoliday) => {
-    setHolidays((prevHolidays) => [...prevHolidays, newHoliday]);
+      fetchHolidays();
+    }
+    catch (error) {
+      console.error("Error adding holiday: ", error);
+    }
+
     setIsAddPageVisible(false);
   };
 
-  const totalPages = Math.ceil(sortedHolidays.length / itemsPerPage);
+  const handleUpdateHoliday = async (Id, name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location) => {
+    try {
+      const response = await fetch(`http://localhost:5000/holidays/${Id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update holiday");
+      }
+
+      fetchHolidays();
+    }
+    catch (error) {
+      console.error("Error updating holiday: ", error);
+    }
+
+    setIsEditPageVisible(false);
+  };
+
+  const totalPages = Math.ceil(holidays.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentHolidays = sortedHolidays.slice(indexOfFirstItem, indexOfLastItem);
+  const currentHolidays = holidays.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <div className="min-h-screen">
@@ -100,10 +142,12 @@ export default function HolidayPlanner() {
         <EditPage
           holiday={holidayToEdit}
           setIsEditPageVisible={setIsEditPageVisible}
-          setHolidays={setHolidays}
+          handleUpdateHoliday={handleUpdateHoliday}
         />
       ) : isAddPageVisible ? (
-        <AddPage setIsAddPageVisible={setIsAddPageVisible} handleAddHoliday={handleAddHoliday} />
+        <AddPage
+          setIsAddPageVisible={setIsAddPageVisible}
+          handleAddHoliday={handleAddHoliday} />
       ) : isDetailsPageVisible ? (
         <DetailsPage
           holiday={holidayToView}
@@ -113,25 +157,25 @@ export default function HolidayPlanner() {
         <>
           <Header onFilterChange={handleFilterChange} onToggleMenu={toggleMenu} isMenuVisible={isMenunVisible} holidays={holidays} setHolidays={setHolidays} />
           <div className={`min-h-screen transition-all duration-300 ${isMenunVisible ? 'pl-64' : ''}`}>
-          <div className="flex justify-between">
-            <Pagination currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} />
-            <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
+            <div className="flex justify-between">
+              <Pagination currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} />
+              <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
+            </div>
+            <HolidayGrid
+              holidays={currentHolidays}
+              onDelete={handleDeleteAction}
+              onEdit={(holiday) => {
+                setHolidayToEdit(holiday);
+                setIsEditPageVisible(true);
+              }}
+              onView={(holiday) => {
+                setHolidayToView(holiday);
+                setIsDetailsPageVisible(true);
+              }}
+            />
+            <AddButton setIsAddPageVisible={setIsAddPageVisible} />
           </div>
-          <HolidayGrid
-            holidays={currentHolidays}
-            onDelete={handleDeleteAction}
-            onEdit={(holiday) => {
-              setHolidayToEdit(holiday);
-              setIsEditPageVisible(true);
-            }}
-            onView={(holiday) => {
-              setHolidayToView(holiday);
-              setIsDetailsPageVisible(true);
-            }}
-          />
-          <AddButton setIsAddPageVisible={setIsAddPageVisible} />
-          </div>
-          <DeletePopup isVisible={isDeletePopUpVisible} onClose={handleCancelDelete} onDelete={handleComfirmDelete} holidayName={holidayToDelete} />
+          <DeletePopup isVisible={isDeletePopUpVisible} onClose={handleCancelDelete} onDelete={handleConfirmDelete} holidayName={holidayToDeleteName} />
         </>
       )
       }

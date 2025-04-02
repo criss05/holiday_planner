@@ -59,13 +59,26 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
             alert("Price fields must be valid numbers.");
             return false;
         }
+        if (new Date(startDate) - new Date(endDate) > 0) {
+            alert("End date cannot be before the start date" );
+            return false;
+        }
 
         return true;
     };
 
     const handleSubmit = () => {
         if (validateForm()) {
-            handleAddHoliday(holiday);
+            handleAddHoliday(holiday.name,
+                holiday.destination,
+                holiday.startDate,
+                holiday.endDate,
+                holiday.transport,
+                holiday.transport_price,
+                holiday.accommodation,
+                holiday.accommodation_name,
+                holiday.accommodation_price,
+                holiday.accommodation_location);
         }
     };
 
@@ -102,12 +115,15 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
                     <div className="flex bg-blue-100 border border-blue-300 px-3 py-2">
                         <div className="grid grid-cols-2 gap-25 items-center">
                             <div className="pl-8">
-                                <RadioMenu options={transportOptions} value={holiday.transport} onChange={(value) => updateHoliday("transport", value)} name="transport" />
+                                <RadioMenu options={transportOptions} 
+                                value={holiday.transport} 
+                                onChange={(value) => updateHoliday("transport", value)} 
+                                name="transport" />
                             </div>
-                            <MiddleInputBox 
-                                text="Price" 
-                                value={holiday.transport_price} 
-                                onChange={(e) => updateHoliday("transport_price", e.target.value)} 
+                            <MiddleInputBox
+                                text="Price"
+                                value={holiday.transport_price}
+                                onChange={(e) => updateHoliday("transport_price", e.target.value)}
                             />
                         </div>
                     </div>
@@ -123,7 +139,9 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
                             onChange={(dates) => {
                                 updateHoliday("startDate", dates.startDate);
                                 updateHoliday("endDate", dates.endDate);
+                           
                             }}
+                            minDate={new Date()}
                         />
                     </div>
                 </div>
@@ -137,20 +155,20 @@ export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
                                 <RadioMenu options={accommodationOptions} value={holiday.accommodation} onChange={(value) => updateHoliday("accommodation", value)} name="accommodation" />
                             </div>
                             <div>
-                                <MiddleInputBox 
-                                    text="Price" 
-                                    value={holiday.accommodation_price} 
-                                    onChange={(e) => updateHoliday("accommodation_price", e.target.value)} 
+                                <MiddleInputBox
+                                    text="Price"
+                                    value={holiday.accommodation_price}
+                                    onChange={(e) => updateHoliday("accommodation_price", e.target.value)}
                                 />
-                                <MiddleInputBox 
-                                    text="Name" 
-                                    value={holiday.accommodation_name} 
-                                    onChange={(e) => updateHoliday("accommodation_name", e.target.value)} 
+                                <MiddleInputBox
+                                    text="Name"
+                                    value={holiday.accommodation_name}
+                                    onChange={(e) => updateHoliday("accommodation_name", e.target.value)}
                                 />
-                                <MiddleInputBox 
-                                    text="Location" 
-                                    value={holiday.accommodation_location} 
-                                    onChange={(e) => updateHoliday("accommodation_location", e.target.value)} 
+                                <MiddleInputBox
+                                    text="Location"
+                                    value={holiday.accommodation_location}
+                                    onChange={(e) => updateHoliday("accommodation_location", e.target.value)}
                                 />
                             </div>
                         </div>
