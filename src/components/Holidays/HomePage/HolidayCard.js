@@ -12,13 +12,16 @@ export default function HolidayCard({ holiday, onDelete, onEdit, onView }) {
                 <p className={holiday.transport_price + holiday.accommodation_price < 500 ? "text-[#da0303]" : holiday.transport_price + holiday.accommodation_price < 1000 ? "text-[#a372e4]" : "text-[#0e0ec0]"}><strong>Price: </strong>{holiday.transport_price + holiday.accommodation_price < 500 ? '💰' : holiday.transport_price + holiday.accommodation_price < 1000 ? '💰💰' : '💰💰💰'} {holiday.transport_price + holiday.accommodation_price} RON</p>
             </div>
             <div className="flex justify-end gap-4 px-4 pb-10">
-                <div className="cursor-pointer bg-[#73DAFF] p-3 rounded-md" onClick={() => onEdit(holiday)}>
+                <div className="cursor-pointer bg-[#73DAFF] p-3 rounded-md" onClick={() => onEdit(holiday)}
+                    data-testid="edit-button">
                     <FaEdit className=" text-lg" />
                 </div>
-                <div className="cursor-pointer bg-[#73DAFF] p-3 rounded-md" onClick={() => onDelete(holiday.id)}>
+                <div className="cursor-pointer bg-[#73DAFF] p-3 rounded-md" onClick={() => onDelete(holiday.id)}
+                    data-testid="delete-button">
                     <FaTrash className="text-lg" />
                 </div>
-                    <div className="cursor-pointer bg-[#73DAFF] p-3 rounded-md" onClick={() => onView(holiday)}>
+                    <div className="cursor-pointer bg-[#73DAFF] p-3 rounded-md" onClick={() => onView(holiday)}
+                        data-testid="info-button">
                         <FaInfoCircle className="text-lg" />
                     </div>
             </div>
