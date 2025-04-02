@@ -57,13 +57,14 @@ export default function FilterMenu({ isVisible, onFilterChange, holidays, setHol
       className={`fixed top-10 left-0 h-full w-64 bg-[#8ad4f186] shadow-lg z-50 transform transition-all duration-300 ${
         isVisible ? "translate-x-0" : "-translate-x-full"
       }`}
+      data-testid="filter-menu"
     >
       <div className="flex flex-col p-6 mt-30">
-        <FilterButton label="All" onClick={() => onFilterChange("All")} />
+        <FilterButton label="All" onClick={() => onFilterChange("All")}/>
         <FilterButton label="Done" onClick={() => onFilterChange("Done")} />
         <FilterButton label="Upcoming" onClick={() => onFilterChange("Upcoming")} />
 
-        <div className="mt-8">
+        <div className="mt-8" data-testid="pie-chart">
           <h3 className="text-center mb-4">Holiday Status Overview</h3>
           <Pie data={data} />
         </div>
@@ -72,6 +73,7 @@ export default function FilterMenu({ isVisible, onFilterChange, holidays, setHol
           <button
             onClick={handleGenerateRandomHolidays}
             className={`px-4 py-2 ${isGenerating ? 'bg-red-500' : 'bg-blue-500'} text-white rounded`}
+            data-testid="generate-button"
           >
             {isGenerating ? 'Stop Generating Holidays' : 'Start Generating Holidays'}
           </button>

@@ -6,6 +6,7 @@ export default function InputBox({value, disabled, name }) {
             value = {value}
             disabled={disabled}
             name={name}
+            data-testid="input-box-details"
         />
     );
 }

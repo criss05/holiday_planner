@@ -6,6 +6,7 @@ export default function InputBox({value, onChange, name }) {
             value = {value}
             onChange={(e) => onChange(e.target.value)}
             name={name}
+            data-testid="input-box"
         />
     );
 }

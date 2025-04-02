@@ -14,6 +14,7 @@ export default function RadioMenu({ options, value, onChange, name }) {
                         value={option}
                         checked={value === option}
                         onChange={(e) => onChange(e.target.value)}
+                        data-testid={`radio-${option.toLowerCase()}`}
                     />
                     <strong>
                         <label className="px-2 text-xl" htmlFor={option.toLowerCase()}>

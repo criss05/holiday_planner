@@ -11,6 +11,7 @@ export default function MiddleInputBox({text, value, onChange}){
                 className="p-2 border-2 border-[#A7CFFF] rounded-md"
                 value={value}
                 onChange={onChange}
+                data-testid="middle-input-box"
             />
         </div>
       );

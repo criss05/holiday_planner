@@ -11,6 +11,7 @@ export default function MiddleInputBox({text, value, disabled}){
                 className="p-2 border-2 border-[#A7CFFF] rounded-md"
                 value={value}
                 disabled={disabled}
+                 data-testid="middle-input-box-details"
             />
         </div>
       );
