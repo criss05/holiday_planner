@@ -66,7 +66,7 @@ app.get("/holidays", (req, res) => {
         result.sort((a, b) => {
             if (sortBy === "Start Date") return new Date(a.startDate) - new Date(b.startDate);
             if (sortBy === "End Date") return new Date(a.endDate) - new Date(b.endDate);
-            return a[sortBy.toLowerCase()].localeCompare(b[sortBy.toLowerCase()]); //TO CHECK
+            return a[sortBy.toLowerCase()].localeCompare(b[sortBy.toLowerCase()]); 
         });
     }
 
@@ -85,11 +85,8 @@ app.get("/holidays/:id", (req, res) => {
 app.post("/holidays", validateRequest, (req, res) => {
     const { name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location } = req.body;
     
-    if (new Date(startDate).getDate() < new Date().getDate()) {
+    if (new Date(startDate) - new Date() < 0) {
         return res.status(400).json({ error: "Start date cannot be in the past" });
-    }
-    if (new Date(endDate).getDate() < new Date().getDate()) {
-        return res.status(400).json({ error: "End date cannot be in the past" });
     }
     
     const newHoliday = {
@@ -148,4 +145,5 @@ app.delete("/holidays/:id", (req, res) => {
 
 export default app;
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+if(process.env.NODE_ENV !== "test")
+    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
