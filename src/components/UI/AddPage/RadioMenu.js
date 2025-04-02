@@ -6,7 +6,7 @@ export default function RadioMenu({ options, value, onChange, name }) {
     return (
         <form>
             {options.map((option) => (
-                <div key="option">
+                <div key={option}>
                     <input
                         type="radio"
                         id={option.toLowerCase()}
