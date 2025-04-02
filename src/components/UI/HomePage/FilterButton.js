@@ -3,6 +3,7 @@ export default function FilterButton({ label, onClick }) {
       <button
         onClick={onClick}
         className="bg-[#68ccf4] px-4 py-2 rounded-md w-full mb-4 text-center"
+        data-testid="filter-button"
       >
         <strong>{label}</strong>
       </button>

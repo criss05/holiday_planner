@@ -4,8 +4,6 @@ import SortDropdown from "@/components/UI/HomePage/SortDropdown";
 import HolidayGrid from "@/components/Holidays/HomePage/HolidayGrid";
 import initialHolidays from "@/data/Holidays";
 import AddButton from "@/components/UI/HomePage/AddButton";
-import parseDate from "@/utils/ParseDate";
-import { DeleteHoliday } from "@/utils/DeleteHoliday";
 import DeletePopup from "@/components/Holidays/HomePage/DeletePopUp";
 import AddPage from "./AddPage";
 import EditPage from "./EditPage";
