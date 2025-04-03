@@ -88,12 +88,12 @@ export default function HolidayPlanner() {
   }
 
 
-  const handleAddHoliday = async (name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location) => {
+  const handleAddHoliday = async (name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location) => {
     try {
       const response = await fetch("http://localhost:5000/holidays", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location }),
+        body: JSON.stringify({ name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location }),
       });
       if (!response.ok) {
         throw new Error("Failed to add holiday: ");
@@ -108,12 +108,12 @@ export default function HolidayPlanner() {
     setIsAddPageVisible(false);
   };
 
-  const handleUpdateHoliday = async (Id, name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location) => {
+  const handleUpdateHoliday = async (Id, name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location) => {
     try {
       const response = await fetch(`http://localhost:5000/holidays/${Id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location })
+        body: JSON.stringify({ name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location })
       });
 
       if (!response.ok) {

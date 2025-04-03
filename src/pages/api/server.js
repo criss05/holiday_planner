@@ -11,9 +11,9 @@ app.use(express.json());
 let holidays = [...initialHolidays];
 
 const validateRequest = (req, res, next) => {
-    const { name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location } = req.body;
+    const { name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location } = req.body;
 
-    if (!name || !destination || !startDate || !endDate || !transport || !transport_price || !accomodation || !accomodation_name || !accomodation_price || !accomodation_location) {
+    if (!name || !destination || !startDate || !endDate || !transport || !transport_price || !accommodation || !accommodation_name || !accommodation_price || !accommodation_location) {
         return res.status(400).json({ error: "All fields are required!" });
     }
 
@@ -31,16 +31,16 @@ const validateRequest = (req, res, next) => {
         return res.status(400).json({ error: "Transport price cannot be negative" });
     }
 
-    if (accomodation_price < 0) {
-        return res.status(400).json({ error: "Accomodation price cannot be negative" });
+    if (accommodation_price < 0) {
+        return res.status(400).json({ error: "accommodation price cannot be negative" });
     }
 
     if (!["Car", "Plane", "Train", "Bus", "Ship"].includes(transport)) {
         return res.status(400).json({ error: "Transport can be only form the list: {'Car', 'Plane', 'Train', 'Bus', 'Ship'}" });
     }
 
-    if (!["Hotel", "Motel", "Hostel", "Apartment", "Cabin", "Resort", "Villa", "Campsite"].includes(accomodation)) {
-        return res.status(400).json({ error: "Accomodation can be only form the list: {'Hotel', 'Motel', 'Hostel', 'Apartment', 'Cabin', 'Resort', 'Villa', 'Campsite'}" });
+    if (!["Hotel", "Motel", "Hostel", "Apartment", "Cabin", "Resort", "Villa", "Campsite"].includes(accommodation)) {
+        return res.status(400).json({ error: "accommodation can be only form the list: {'Hotel', 'Motel', 'Hostel', 'Apartment', 'Cabin', 'Resort', 'Villa', 'Campsite'}" });
     }
     next();
 };
@@ -83,7 +83,7 @@ app.get("/holidays/:id", (req, res) => {
 
 // Add a new holiday
 app.post("/holidays", validateRequest, (req, res) => {
-    const { name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location } = req.body;
+    const { name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location } = req.body;
     
     if (new Date(startDate) - new Date() < 0) {
         return res.status(400).json({ error: "Start date cannot be in the past" });
@@ -97,10 +97,10 @@ app.post("/holidays", validateRequest, (req, res) => {
         endDate,
         transport,
         transport_price,
-        accomodation,
-        accomodation_name,
-        accomodation_price,
-        accomodation_location
+        accommodation,
+        accommodation_name,
+        accommodation_price,
+        accommodation_location
     };
 
     holidays.push(newHoliday);
@@ -109,7 +109,7 @@ app.post("/holidays", validateRequest, (req, res) => {
 
 
 app.put("/holidays/:id", validateRequest, (req, res) => {
-    const { name, destination, startDate, endDate, transport, transport_price, accomodation, accomodation_name, accomodation_price, accomodation_location } = req.body;
+    const { name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location } = req.body;
 
     const index = holidays.findIndex((h) => h.id === parseInt(req.params.id));
     if (index === -1) {
@@ -123,10 +123,10 @@ app.put("/holidays/:id", validateRequest, (req, res) => {
         endDate, 
         transport, 
         transport_price, 
-        accomodation, 
-        accomodation_name, 
-        accomodation_price, 
-        accomodation_location };
+        accommodation, 
+        accommodation_name, 
+        accommodation_price, 
+        accommodation_location };
 
     res.status(200).json(holidays[index]);
 });
