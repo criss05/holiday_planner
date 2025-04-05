@@ -5,22 +5,46 @@ import MiddleInputBox from "@/components/UI/DetailsPage/MiddleInputBox";
 import RadioMenu from "@/components/UI/DetailsPage/RadioMenu";
 import Calendar from "@/components/UI/DetailsPage/Calendar";
 import BackButton from "@/components/UI/DetailsPage/BackButton";
-import { FaDownload } from "react-icons/fa";  // Importing download icon from react-icons
-import axios from "axios";
+import { FaDownload } from "react-icons/fa";
 
 
 
 export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
     const [holidayDetails, setHolidayDetails] = useState(holiday);
+    const [existingArchive, setExistingArchive] = useState([]);
 
     // Ensure the details are correctly set when the holiday prop changes
     useEffect(() => {
         setHolidayDetails(holiday);
     }, [holiday]);
 
+    useEffect(() => {
+        const fetchExistingFiles = async () => {
+            try {
+                const response = await fetch(`http://localhost:5000/uploads/${holidayDetails.id}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to fetch files");
+                }
+
+                const data = await response.json();
+                setExistingArchive(data.files);
+
+            } catch (error) {
+                console.error("Error fetching existing files:", error);
+                setUploadError("Failed to load existing files. Please try again.");
+            }
+        };
+
+        if (holidayDetails?.id) {
+            fetchExistingFiles();
+        }
+    }, [holidayDetails?.id]);
+
     const handleDownload = async () => {
         try {
-            const downloadUrl = `http://localhost:5000/uploads/${holiday.id}/download`;
+            const downloadUrl = `http://localhost:5000/uploads/${holiday.id}/${holiday.name}/download`;
             const link = document.createElement("a");
             link.href = downloadUrl;
             link.download = `${holiday.id}-files.zip`;
@@ -105,13 +129,30 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
                 {/* Downloads Section */}
                 <div className="grid grid-cols-2 gap-6">
                     <label className="text-gray-800 font-semibold text-3xl">Downloads:</label>
-                    <div
-                        className="flex justify-center items-center bg-blue-500 text-white p-3 rounded cursor-pointer"
-                        onClick={handleDownload}
-                    >
-                        <FaDownload className="mr-2" />
-                        Download Files
+                    <div className="flex bg-blue-100 border border-blue-300 px-3 py-2">
+                        <div
+                            className="flex justify-center items-center mr-4 bg-blue-500 text-white p-3 rounded cursor-pointer h-1"
+                            onClick={handleDownload}
+                        >
+                            <FaDownload />
+                        </div>
+                        
+                        <div>
+                            {existingArchive.length > 0 && (
+                                <div>
+                                    <h3>Existing Uploaded Files:</h3>
+                                    <ul>
+                                        {existingArchive.map((file, index) => (
+                                            <li key={index}>
+                                                {file.originalName}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
                     </div>
+
                 </div>
 
                 {/* Close Button */}

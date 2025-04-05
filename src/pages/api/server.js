@@ -250,8 +250,8 @@ app.get("/uploads/:holidayId", async (req, res) => {
 });
 
 
-app.get("/uploads/:holidayId/download", async (req, res) => {
-    const { holidayId } = req.params;
+app.get("/uploads/:holidayId/:holidayName/download", async (req, res) => {
+    const { holidayId, holidayName } = req.params;
     const uploadFolder = path.join(uploadDir, holidayId);
 
     try {
@@ -259,7 +259,7 @@ app.get("/uploads/:holidayId/download", async (req, res) => {
         await fs.promises.access(uploadFolder, fs.constants.F_OK);
 
         // Create a zip file stream
-        const zipFileName = `${holidayId}-files.zip`;
+        const zipFileName = `${holidayName}-files.zip`;
         const zip = archiver('zip', {
             zlib: { level: 9 } // Maximum compression
         });
