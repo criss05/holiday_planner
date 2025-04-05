@@ -1,12 +1,12 @@
 import { useState } from "react";
 import Header from "@/components/UI/Header";
-import InputBox from "@/components/UI/AddPage/InputBox";
-import MiddleInputBox from "@/components/UI/AddPage/MiddleInputBox";
-import RadioMenu from "@/components/UI/AddPage/RadioMenu";
-import Calendar from "@/components/UI/AddPage/Calendar";
+import InputBox from "@/components/UI/Add&EditPage/InputBox";
+import MiddleInputBox from "@/components/UI/Add&EditPage/MiddleInputBox";
+import RadioMenu from "@/components/UI/Add&EditPage/RadioMenu";
+import Calendar from "@/components/UI/Add&EditPage/Calendar";
 import { FaMapMarkedAlt } from "react-icons/fa";
-import DoneButton from "@/components/UI/AddPage/DoneButton";
-import CancelButton from "@/components/UI/AddPage/CancelButton";
+import DoneButton from "@/components/UI/Add&EditPage/DoneButton";
+import CancelButton from "@/components/UI/Add&EditPage/CancelButton";
 
 export default function AddPage({ setIsAddPageVisible, handleAddHoliday }) {
     const transportOptions = ["Car", "Plane", "Train", "Bus", "Ship"];
