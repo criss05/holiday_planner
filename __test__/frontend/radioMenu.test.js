@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import RadioMenu from "@/components/UI/AddPage/RadioMenu"; // Adjust the path if necessary
+import RadioMenu from "@/components/UI/Add&EditPage/RadioMenu"; // Adjust the path if necessary
 
 describe("RadioMenu Component", () => {
     test("renders all radio options correctly", () => {

@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom"; // Import the DOM matchers
-import DoneButton from "@/components/UI/AddPage/DoneButton"; // Adjust the path if needed
+import DoneButton from "@/components/UI/Add&EditPage/DoneButton"; // Adjust the path if needed
 
 describe("DoneButton Component", () => {
     test("renders the Done button", () => {

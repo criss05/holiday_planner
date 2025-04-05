@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import InputBox from "@/components/UI/AddPage/InputBox"; // Adjust path if necessary
+import InputBox from "@/components/UI/Add&EditPage/InputBox"; // Adjust path if necessary
 
 describe("InputBox Component", () => {
     test("renders the input field", () => {
