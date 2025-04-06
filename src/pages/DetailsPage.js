@@ -12,6 +12,7 @@ import { FaDownload } from "react-icons/fa";
 export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
     const [holidayDetails, setHolidayDetails] = useState(holiday);
     const [existingArchive, setExistingArchive] = useState([]);
+    const [uploadError, setUploadError] = useState(null);
 
     // Ensure the details are correctly set when the holiday prop changes
     useEffect(() => {
