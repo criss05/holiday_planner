@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import MiddleInputBox from "@/components/UI/AddPage/MiddleInputBox"; // Adjust the path if necessary
+import MiddleInputBox from "@/components/UI/Add&EditPage/MiddleInputBox"; // Adjust the path if necessary
 
 describe("MiddleInputBox Component", () => {
     test("renders the input field with the correct label", () => {

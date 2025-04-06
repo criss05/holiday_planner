@@ -1,12 +1,23 @@
 import express from "express";
 import cors from "cors";
 import initialHolidays from "../../data/Holidays.js";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import archiver from 'archiver';
+
+
 
 const app = express();
 const PORT = 5000;
+const uploadDir = path.join("uploads");
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir);
+}
 
 app.use(cors());
 app.use(express.json());
+
 
 let holidays = [...initialHolidays];
 
@@ -142,6 +153,135 @@ app.delete("/holidays/:id", (req, res) => {
 
     res.status(200).json("Capsule deleted succesfully!");
 });
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const holidayId = req.params.id;
+        const folder = path.join(uploadDir, holidayId);
+
+        // Make sure the folder exists
+        fs.mkdirSync(folder, { recursive: true });
+
+        cb(null, folder);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+    },
+});
+
+
+const upload = multer({
+    storage,
+    limits: {
+        fileSize: 1024 * 1024 * 1024 * 3,  // You can adjust the file size limit here (3GB in this case)
+    },
+
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.mkv', '.avi', '.mov'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (allowedTypes.includes(ext)) {
+            cb(null, true);
+        } else {
+            cb(new Error("Only image and video files are allowed"));
+        }
+
+    },
+});
+
+app.post("/upload/:id", upload.array("files", 100), (req, res) => {
+    const holidayId = parseInt(req.params.id);
+
+    if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ error: "No files uploaded" });
+    }
+
+    const holiday = holidays.find((h) => h.id === holidayId);
+    if (!holiday) {
+        return res.status(404).json({ error: "Holiday not found" });
+    }
+
+    // Create an array of archive metadata
+    const uploadedFilesInfo = req.files.map(file => ({
+        filename: file.filename,
+        path: `/uploads/${holidayId}/${file.filename}`,
+        originalName: file.originalname,
+        uploadedAt: new Date(),
+    }));
+
+    // If you want to store these in holiday archives array
+    holiday.archive = uploadedFilesInfo;
+
+    res.status(201).json({
+        message: "Files uploaded successfully",
+        holidayId,
+        archives: uploadedFilesInfo,
+    });
+});
+
+
+app.use("/uploads", express.static(path.resolve("uploads")));
+
+app.get("/uploads/:holidayId", async (req, res) => {
+    const holidayId = req.params.holidayId;
+    const uploadDir = path.join("uploads", holidayId);
+
+    try {
+        await fs.promises.access(uploadDir, fs.constants.F_OK);
+        
+
+        const files = await fs.promises.readdir(uploadDir);
+        
+
+        const fileDetails = files.map((file) => ({
+            originalName: file,
+            path: `/uploads/${holidayId}/${file}`,
+        }));
+
+        return res.json({
+            holidayId,
+            files: fileDetails,
+        });
+    } catch (err) {
+        return res.json({
+            holidayId,
+            files: [],
+        });
+    }
+});
+
+
+app.get("/uploads/:holidayId/:holidayName/download", async (req, res) => {
+    const { holidayId, holidayName } = req.params;
+    const uploadFolder = path.join(uploadDir, holidayId);
+
+    try {
+        // Check if the directory exists
+        await fs.promises.access(uploadFolder, fs.constants.F_OK);
+
+        // Create a zip file stream
+        const zipFileName = `${holidayName}-files.zip`;
+        const zip = archiver('zip', {
+            zlib: { level: 9 } // Maximum compression
+        });
+
+        res.attachment(zipFileName);
+        zip.pipe(res);
+
+        // Read the directory and append files to the zip
+        const files = await fs.promises.readdir(uploadFolder);
+        files.forEach((file) => {
+            const filePath = path.join(uploadFolder, file);
+            zip.file(filePath, { name: file }); // Add file to the zip with original file name
+        });
+
+        // Finalize the archive (important step)
+        zip.finalize();
+
+    } catch (err) {
+        return res.status(404).json({ error: "Holiday folder not found or no files to download" });
+    }
+});
+
 
 export default app;
 

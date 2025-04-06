@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom"; // Import the DOM matchers
-import CancelButton from "@/components/UI/AddPage/CancelButton"; // Adjust the path if needed
+import CancelButton from "@/components/UI/Add&EditPage/CancelButton"; // Adjust the path if needed
 
 describe("CancelButton Component", () => {
     test("renders the Cancel button", () => {

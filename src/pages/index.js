@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/UI/HomePage/HeaderHome";
 import SortDropdown from "@/components/UI/HomePage/SortDropdown";
 import HolidayGrid from "@/components/Holidays/HomePage/HolidayGrid";
