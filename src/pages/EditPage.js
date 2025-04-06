@@ -62,7 +62,7 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
     useEffect(() => {
         const fetchExistingFiles = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/uploads/${editedHoliday.id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${editedHoliday.id}`);
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -138,7 +138,7 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
         });
 
         try {
-            const response = await fetch(`http://localhost:5000/upload/${editedHoliday.id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/upload/${editedHoliday.id}`, {
                 method: "POST",
                 body: formData,
             });

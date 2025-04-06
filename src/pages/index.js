@@ -28,6 +28,7 @@ export default function HolidayPlanner() {
   const [currentPage, setCurrentPage] = useState(1);
 
 
+
   useEffect(() => {
     fetchHolidays();
   }, [filter, sortBy]
@@ -35,7 +36,7 @@ export default function HolidayPlanner() {
 
   const fetchHolidays = async () => {
     try {
-      let url = `http://localhost:5000/holidays?filter=${filter}&sortBy=${sortBy}`;
+      let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays?filter=${filter}&sortBy=${sortBy}`;
 
       const response = await fetch(url);
       if (!response.ok) {
@@ -58,7 +59,7 @@ export default function HolidayPlanner() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/holidays/${holidayToDeleteId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/${holidayToDeleteId}`, {
         method: "DELETE",
       });
 
@@ -90,7 +91,7 @@ export default function HolidayPlanner() {
 
   const handleAddHoliday = async (name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location) => {
     try {
-      const response = await fetch("http://localhost:5000/holidays", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location }),
@@ -110,7 +111,7 @@ export default function HolidayPlanner() {
 
   const handleUpdateHoliday = async (Id, name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location) => {
     try {
-      const response = await fetch(`http://localhost:5000/holidays/${Id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/${Id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location })
