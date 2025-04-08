@@ -2,7 +2,6 @@ import FilterButton from "./FilterButton";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale } from "chart.js";
-import { generateRandomHolidays } from "@/data/generateHolidays";
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale);
 
@@ -34,18 +33,42 @@ export default function FilterMenu({ isVisible, onFilterChange, holidays, setHol
     setIsGenerating((prevState) => !prevState);
   }, []);
 
+
   useEffect(() => {
-    let interval;
+    // Initialize WebSocket connection
+    const socket = new WebSocket("ws://localhost:5000"); // Adjust this URL if your server is hosted elsewhere
+
+    socket.onopen = () => {
+      console.log("WebSocket connection established");
+      // Send a message to start or stop holiday generation
+      socket.send(JSON.stringify({ action: "toggleGeneration" }));
+    };
+
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === "holidays") {
+        // Update the holidays in the component state
+        setHolidays(message.holidays);
+      }
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, [setHolidays]);
+
+
+  useEffect(() => {
+     let interval;
 
     if (isGenerating) {
       interval = setInterval(() => {
-        const newHolidays = generateRandomHolidays(1); 
+        const newHolidays = generateRandomHolidays(1);
         setHolidays((prevHolidays) => [...prevHolidays, ...newHolidays]);
-      }, 1000); 
+      }, 1000);
     } else {
       clearInterval(interval);
     }
-
 
     return () => {
       clearInterval(interval);
