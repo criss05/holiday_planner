@@ -2,18 +2,18 @@ import { useState, useEffect } from "react";
 import Header from "@/components/UI/HomePage/HeaderHome";
 import SortDropdown from "@/components/UI/HomePage/SortDropdown";
 import HolidayGrid from "@/components/Holidays/HomePage/HolidayGrid";
-import initialHolidays from "@/data/Holidays";
 import AddButton from "@/components/UI/HomePage/AddButton";
 import DeletePopup from "@/components/Holidays/HomePage/DeletePopUp";
 import AddPage from "./AddPage";
 import EditPage from "./EditPage";
 import DetailsPage from "./DetailsPage";
 import Pagination from "@/components/UI/HomePage/Pagination";
+import { getQueue, saveQueue, queueOperation, processQueue } from "@/utils/queue";
 
 
 export default function HolidayPlanner() {
   const [sortBy, setSortBy] = useState("Start Date");
-  const [holidays, setHolidays] = useState(initialHolidays);
+  const [holidays, setHolidays] = useState([]);
   const [isDeletePopUpVisible, setIsDeletePopUpVisible] = useState(false);
   const [holidayToDeleteId, setHolidayToDeleteId] = useState(null);
   const [holidayToDeleteName, setHolidayToDeleteName] = useState(null);
@@ -26,6 +26,45 @@ export default function HolidayPlanner() {
   const [holidayToView, setHolidayToView] = useState(null);
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isNetworkOnline, setIsNetworkOnline] = useState(true);
+  const [isServerOnline, setIsServerOnline] = useState(true);
+
+
+  useEffect(() => {
+      setIsNetworkOnline(navigator.onLine);
+
+    const handleOnline = () => setIsNetworkOnline(true);
+    const handleOffline = () => setIsNetworkOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    const pingServer = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays`);
+        setIsServerOnline(response.ok);
+      } catch {
+        setIsServerOnline(false);
+      }
+    };
+
+    pingServer();
+    const interval = setInterval(pingServer, 1000);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      clearInterval(interval);
+    };
+  }, [isNetworkOnline, isServerOnline]);
+
+
+  useEffect(() => {
+    if (isNetworkOnline && isServerOnline) {
+      processQueue();
+    }
+  }, [isNetworkOnline, isServerOnline]
+);
 
 
   useEffect(() => {
@@ -34,19 +73,24 @@ export default function HolidayPlanner() {
   );
 
   const fetchHolidays = async () => {
+    console.log(isNetworkOnline, isServerOnline);
+    if (!isNetworkOnline || !isServerOnline) {
+      console.log("You are offline. Skipping fetch.");
+      return;
+    }
+  
     try {
-      let url = `http://localhost:5000/holidays?filter=${filter}&sortBy=${sortBy}`;
-
+      let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays?filter=${filter}&sortBy=${sortBy}`;
+  
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Failed to fetch holidays");
       }
-
+  
       const data = await response.json();
       setHolidays(data);
-    }
-    catch (error) {
-      console.Error("Error fetching the holidays: ", error);
+    } catch (error) {
+      console.error("Error fetching the holidays: ", error);
     }
   }
 
@@ -57,22 +101,38 @@ export default function HolidayPlanner() {
   }
 
   const handleConfirmDelete = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/holidays/${holidayToDeleteId}`, {
+    const isOnline = navigator.onLine && isServerOnline;
+
+    if (isOnline) {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/${holidayToDeleteId}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) throw new Error("Failed to delete holiday");
+
+        fetchHolidays();
+      } catch (error) {
+        console.error("Error deleting holiday (online):", error);
+      }
+    } else {
+      // Queue the delete operation if offline
+      queueOperation({
         method: "DELETE",
+        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/${holidayToDeleteId}`,
+        body: {},
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete holiday");
-      }
+      // Optimistically remove from local state
+      const remainingHolidays = holidays.filter(h => h.id !== holidayToDeleteId);
+      setHolidays(remainingHolidays);
 
-      fetchHolidays();
-
-      setIsDeletePopUpVisible(false);
-    } catch (error) {
-      console.error("Error deleting the holiday:", error);
+      console.log("Offline, operation queued: Delete Holiday");
     }
-  };
+
+    setIsDeletePopUpVisible(false);
+};
+
 
 
   const handleCancelDelete = () => {
@@ -89,41 +149,72 @@ export default function HolidayPlanner() {
 
 
   const handleAddHoliday = async (name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location) => {
-    try {
-      const response = await fetch("http://localhost:5000/holidays", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to add holiday: ");
-      }
+    const body = { name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location };
 
-      fetchHolidays();
-    }
-    catch (error) {
-      console.error("Error adding holiday: ", error);
+    const op = {
+      method: "POST",
+      url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays`,
+      body,
+    };
+
+    const isOnline = navigator.onLine && isServerOnline;
+
+    if (isOnline) {
+      try {
+        const response = await fetch(op.url, {
+          method: op.method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(op.body),
+        });
+
+        if (!response.ok) throw new Error("Failed to add holiday");
+
+        fetchHolidays();
+      } catch (error) {
+        console.error("Server error, queuing operation...");
+        const queue = getQueue();
+        queue.push(op);
+        saveQueue(queue);
+      }
+    } else {
+      queueOperation({
+        method: "POST",
+        url: op.url,
+        body: op.body,
+      });
+      console.log("Offline, operation queued: Add Holiday");
     }
 
     setIsAddPageVisible(false);
   };
 
-  const handleUpdateHoliday = async (Id, name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location) => {
-    try {
-      const response = await fetch(`http://localhost:5000/holidays/${Id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location })
-      });
+  const handleUpdateHoliday = async (id, name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location) => {
+    const updatedHoliday = { name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location };
 
-      if (!response.ok) {
-        throw new Error("Failed to update holiday");
+    const isOnline = navigator.onLine && isServerOnline;
+
+    if (isOnline) {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedHoliday),
+        });
+
+        if (!response.ok) throw new Error("Failed to update holiday");
+
+        fetchHolidays();
+      } catch (error) {
+        console.error("Error updating holiday (online):", error);
       }
-
-      fetchHolidays();
-    }
-    catch (error) {
-      console.error("Error updating holiday: ", error);
+    } else {
+      // Queue the update operation if offline
+      queueOperation({
+        method: "PUT",
+        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/${id}`,
+        body: updatedHoliday,
+      });
+      console.log("Offline, operation queued: Update Holiday");
     }
 
     setIsEditPageVisible(false);
@@ -145,18 +236,31 @@ export default function HolidayPlanner() {
       ) : isAddPageVisible ? (
         <AddPage
           setIsAddPageVisible={setIsAddPageVisible}
-          handleAddHoliday={handleAddHoliday} />
+          handleAddHoliday={handleAddHoliday} 
+          isOnline={navigator.onLine && isServerOnline}
+          queueOperation={queueOperation}/>
       ) : isDetailsPageVisible ? (
         <DetailsPage
           holiday={holidayToView}
           setIsDetailsPageVisible={setIsDetailsPageVisible}
         />
       ) : (
-        <>
+        <>{!isNetworkOnline && (
+          <div className="bg-red-500 text-white text-center p-2">
+            You are offline. Changes will be saved when you're back online.
+          </div>
+        )}
+
+          {isNetworkOnline && !isServerOnline && (
+            <div className="bg-yellow-500 text-black text-center p-2">
+              Server is unreachable. Actions are queued and will sync later.
+            </div>
+          )}
           <Header onFilterChange={handleFilterChange} onToggleMenu={toggleMenu} isMenuVisible={isMenunVisible} holidays={holidays} setHolidays={setHolidays} />
           <div className={`min-h-screen transition-all duration-300 ${isMenunVisible ? 'pl-64' : ''}`}>
             <div className="flex justify-between">
               <Pagination currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} />
+
               <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
             </div>
             <HolidayGrid

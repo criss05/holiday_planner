@@ -5,6 +5,8 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import archiver from 'archiver';
+import dotenv from "dotenv";
+dotenv.config();
 
 
 
@@ -287,4 +289,4 @@ export default app;
 
 if(process.env.NODE_ENV !== "test")
     /* istanbul ignore next */
-    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+    app.listen(PORT, () => console.log(`Server running on ${process.env.NEXT_PUBLIC_API_BASE_URL}`));

@@ -14,6 +14,7 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
     const [existingArchive, setExistingArchive] = useState([]);
     const [uploadError, setUploadError] = useState(null);
 
+
     // Ensure the details are correctly set when the holiday prop changes
     useEffect(() => {
         setHolidayDetails(holiday);
@@ -22,7 +23,7 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
     useEffect(() => {
         const fetchExistingFiles = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/uploads/${holidayDetails.id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${holidayDetails.id}`);
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -45,7 +46,7 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
 
     const handleDownload = async () => {
         try {
-            const downloadUrl = `http://localhost:5000/uploads/${holiday.id}/${holiday.name}/download`;
+            const downloadUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${holiday.id}/${holiday.name}/download`;
             const link = document.createElement("a");
             link.href = downloadUrl;
             link.download = `${holiday.id}-files.zip`;
@@ -151,7 +152,11 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
                                     </ul>
                                 </div>
                             )}
+                            {uploadError && (
+                                <p className="text-red-600 text-sm">{uploadError}</p>
+                            )}
                         </div>
+                        
                     </div>
 
                 </div>
