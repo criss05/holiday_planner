@@ -104,13 +104,21 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
     };
 
     const handleSubmit = async () => {
-        if (validateForm()) {
-            if (uploadedFile.length > 0) {
-                const success = await uploadFiles();  // Call a function to upload multiple files
-                if (!success) return;
+        if (!validateForm()) return;
+    
+        // Try uploading files first
+        if (uploadedFile.length > 0) {
+            const success = await uploadFiles();
+            if (!success) {
+                // Save form with upload error too
+                savePendingEditLocally();
+                alert("Upload failed. Your changes have been saved locally and will sync once online.");
+                return;
             }
-
-            handleUpdateHoliday(
+        }
+    
+        try {
+            await handleUpdateHoliday(
                 editedHoliday.id,
                 editedHoliday.name,
                 editedHoliday.destination,
@@ -123,7 +131,20 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
                 editedHoliday.accommodation_price,
                 editedHoliday.accommodation_location
             );
+        } catch (error) {
+            console.warn("Failed to update holiday:", error);
+            savePendingEditLocally();
+            alert("Server error! Your changes are saved locally and will be retried when you're back online.");
         }
+    };
+    
+    const savePendingEditLocally = () => {
+        const pendingEdits = JSON.parse(localStorage.getItem("pendingEdits")) || [];
+    
+        const updatedEdits = pendingEdits.filter(edit => edit.id !== editedHoliday.id); // Avoid duplicates
+    
+        updatedEdits.push(editedHoliday);
+        localStorage.setItem("pendingEdits", JSON.stringify(updatedEdits));
     };
 
     const uploadFiles = async () => {
