@@ -1,4 +1,5 @@
 import express from "express";
+import { WebSocket } from "ws";
 import cors from "cors";
 import initialHolidays from "../../data/Holidays.js";
 import multer from "multer";
@@ -17,11 +18,14 @@ if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir);
 }
 
+const wss = new WebSocketServer({ noServer: true });
+
 app.use(cors());
 app.use(express.json());
 
 
 let holidays = [...initialHolidays];
+let generatingHolidays = false;
 
 const validateRequest = (req, res, next) => {
     const { name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location } = req.body;
@@ -284,6 +288,82 @@ app.get("/uploads/:holidayId/:holidayName/download", async (req, res) => {
     }
 });
 
+
+wss.on("connection", (ws) => {
+    console.log("Client connected");
+  
+    // Send current holidays when a client connects
+    ws.send(JSON.stringify({ type: "holidays", holidays }));
+  
+    // Listen for messages from the client (e.g., for stopping the generation)
+    ws.on("message", (message) => {
+      const data = JSON.parse(message);
+  
+      if (data.action === "toggleGeneration") {
+        if (generatingHolidays) {
+          stopHolidayGeneration();
+        } else {
+          startHolidayGeneration(ws);
+        }
+      }
+    });
+  });
+
+  const startHolidayGeneration = (ws) => {
+    generatingHolidays = true;
+    let count = 0;
+  
+    // Simulate holiday generation
+    const interval = setInterval(() => {
+      if (!generatingHolidays || count >= 100) {
+        clearInterval(interval);
+        return;
+      }
+  
+      // Create a new holiday
+      const newHoliday = {
+        id: holidays.length + 1,
+        name: `Holiday ${holidays.length + 1}`,
+        destination: "Destination " + holidays.length,
+        startDate: new Date(),
+        endDate: new Date(),
+        transport: "Plane",
+        transport_price: 100 + holidays.length,
+        accommodation: "Hotel",
+        accommodation_name: "Hotel Name",
+        accommodation_price: 150 + holidays.length,
+        accommodation_location: "Location " + holidays.length,
+      };
+  
+      holidays.push(newHoliday);
+  
+      // Send the updated holidays to all connected clients
+      wss.clients.forEach(client => {
+        if (client.readyState === client.OPEN) {
+          client.send(JSON.stringify({ type: "holidays", holidays }));
+        }
+      });
+  
+      count++;
+    }, 2000); // Generate a holiday every 2 seconds
+  };
+  
+  // Stop generating holidays
+  const stopHolidayGeneration = () => {
+    generatingHolidays = false;
+    console.log("Holiday generation stopped");
+  };
+  
+  // WebSocket upgrade request handling
+  app.server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+  
+  app.server.on("upgrade", (request, socket, head) => {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit("connection", ws, request);
+    });
+  });
 
 export default app;
 
