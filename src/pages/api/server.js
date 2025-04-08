@@ -1,5 +1,5 @@
 import express from "express";
-import { WebSocket } from "ws";
+import { WebSocketServer } from "ws";
 import cors from "cors";
 import initialHolidays from "../../data/Holidays.js";
 import multer from "multer";
