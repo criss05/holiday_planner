@@ -289,4 +289,4 @@ export default app;
 
 if(process.env.NODE_ENV !== "test")
     /* istanbul ignore next */
-    app.listen(PORT, () => console.log(`Server running on ${process.env.NEXT_PUBLIC_API_BASE_URL}:${PORT}`));
+    app.listen(PORT, () => console.log(`Server running on ${process.env.NEXT_PUBLIC_API_BASE_URL}`));
