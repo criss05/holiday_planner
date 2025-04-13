@@ -159,6 +159,7 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
         });
 
         try {
+            console.log("Fetching uploads for:", editedHoliday.holiday_id);
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/upload/${editedHoliday.holiday_id}`, {
                 method: "POST",
                 body: formData,
@@ -173,7 +174,7 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
             console.log("Upload success:", data);
 
             // Update local state to reflect the new uploaded files
-            setExistingArchive(data.archives);
+            setExistingArchive(data);
             return true;
         } catch (error) {
             console.error("Upload error:", error);
@@ -286,13 +287,13 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
                     <label className="text-gray-800 font-semibold text-3xl">Upload Memories:</label>
                     <div className="flex flex-col space-y-2 bg-blue-100 border border-blue-300 px-3 py-2">
                         {/* Display Existing Archives */}
-                        {existingArchive.length > 0 && (
+                        {Array.isArray(existingArchive) && existingArchive.length > 0 && (
                             <div>
                                 <h3>Existing Uploaded Files:</h3>
                                 <ul>
                                     {existingArchive.map((file, index) => (
                                         <li key={index}>
-                                            {file.originalName}
+                                            {file.original_name}
                                         </li>
                                     ))}
                                 </ul>
