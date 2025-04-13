@@ -29,9 +29,43 @@ export default function HolidayPlanner() {
   const [isNetworkOnline, setIsNetworkOnline] = useState(true);
   const [isServerOnline, setIsServerOnline] = useState(true);
 
+  useEffect(() => {
+    const logConnection = async (type) => {
+      try {
+        await fetch("http://localhost:5000/log-connection", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({ type }),
+        });
+
+      } catch (error) {
+        console.error("Logging error:", error);
+      }
+    };
+
+    logConnection("connect");
+
+    const handleBeforeUnload = () => {
+      navigator.sendBeacon(
+        "http://localhost:5000/log-connection",
+        JSON.stringify({ type: "disconnect" })
+      );
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      handleBeforeUnload();
+    };
+
+  }, []);
 
   useEffect(() => {
-      setIsNetworkOnline(navigator.onLine);
+    setIsNetworkOnline(navigator.onLine);
 
     const handleOnline = () => setIsNetworkOnline(true);
     const handleOffline = () => setIsNetworkOnline(false);
@@ -64,7 +98,7 @@ export default function HolidayPlanner() {
       processQueue();
     }
   }, [isNetworkOnline, isServerOnline]
-);
+  );
 
 
   useEffect(() => {
@@ -78,15 +112,15 @@ export default function HolidayPlanner() {
       console.log("You are offline. Skipping fetch.");
       return;
     }
-  
+
     try {
       let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays?filter=${filter}&sortBy=${sortBy}`;
-  
+
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Failed to fetch holidays");
       }
-  
+
       const data = await response.json();
       setHolidays(data);
     } catch (error) {
@@ -131,7 +165,7 @@ export default function HolidayPlanner() {
     }
 
     setIsDeletePopUpVisible(false);
-};
+  };
 
 
 
@@ -236,9 +270,9 @@ export default function HolidayPlanner() {
       ) : isAddPageVisible ? (
         <AddPage
           setIsAddPageVisible={setIsAddPageVisible}
-          handleAddHoliday={handleAddHoliday} 
+          handleAddHoliday={handleAddHoliday}
           isOnline={navigator.onLine && isServerOnline}
-          queueOperation={queueOperation}/>
+          queueOperation={queueOperation} />
       ) : isDetailsPageVisible ? (
         <DetailsPage
           holiday={holidayToView}

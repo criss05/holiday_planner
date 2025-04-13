@@ -284,6 +284,32 @@ app.get("/uploads/:holidayId/:holidayName/download", async (req, res) => {
     }
 });
 
+app.post("/log-connection", express.raw({ type: '*/*' }), (req, res) =>{
+    let type;
+
+    try {
+        const rawBody = req.body.toString();
+        const parsed = JSON.parse(rawBody);
+        type = parsed.type;
+    } catch (err) {
+        type = req.body?.type;
+    }
+
+    if (!type) {
+        return res.status(400).json({ error: "Missing connection type" });
+    }
+
+    const ip = 
+        req.headers["x-forwarded-for"]?.split(",")[0] ||
+        req.socket.remoteAddress ||
+        "Unknown IP.";
+
+    const logMessage = `[${new Date().toISOString()}] ${type.toUpperCase()} from IP: ${ip}`;
+    console.log(logMessage);
+
+    res.status(200).json({ message: "Connection logged" });
+})
+
 
 export default app;
 
