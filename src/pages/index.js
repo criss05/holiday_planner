@@ -83,7 +83,7 @@ export default function HolidayPlanner() {
     };
 
     pingServer();
-    const interval = setInterval(pingServer, 1000);
+    const interval = setInterval(pingServer, 10000);
 
     return () => {
       window.removeEventListener("online", handleOnline);
@@ -128,15 +128,17 @@ export default function HolidayPlanner() {
     }
   }
 
-  const handleDeleteAction = (id) => {
-    setHolidayToDeleteId(id);
-    setHolidayToDeleteName(holidays.find((h) => h.id === id).name);
+  const handleDeleteAction = (holiday_id) => {
+    setHolidayToDeleteId(holiday_id);
+    console.log(holiday_id);
+    console.log(holidayToDeleteId);
+    setHolidayToDeleteName(holidays.find((h) => h.holiday_id === holiday_id).holiday_name);
     setIsDeletePopUpVisible(true);
   }
 
   const handleConfirmDelete = async () => {
     const isOnline = navigator.onLine && isServerOnline;
-
+    console.log(holidayToDeleteId, holidayToDeleteName);
     if (isOnline) {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/${holidayToDeleteId}`, {
@@ -158,7 +160,7 @@ export default function HolidayPlanner() {
       });
 
       // Optimistically remove from local state
-      const remainingHolidays = holidays.filter(h => h.id !== holidayToDeleteId);
+      const remainingHolidays = holidays.filter(h => h.holiday_id !== holidayToDeleteId);
       setHolidays(remainingHolidays);
 
       console.log("Offline, operation queued: Delete Holiday");
@@ -182,8 +184,8 @@ export default function HolidayPlanner() {
   }
 
 
-  const handleAddHoliday = async (name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location) => {
-    const body = { name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location };
+  const handleAddHoliday = async (holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location) => {
+    const body = { holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location };
 
     const op = {
       method: "POST",
@@ -222,14 +224,14 @@ export default function HolidayPlanner() {
     setIsAddPageVisible(false);
   };
 
-  const handleUpdateHoliday = async (id, name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location) => {
-    const updatedHoliday = { name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location };
+  const handleUpdateHoliday = async (holiday_id, holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location) => {
+    const updatedHoliday = { holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location };
 
     const isOnline = navigator.onLine && isServerOnline;
 
     if (isOnline) {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/${id}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/${holiday_id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updatedHoliday),
@@ -245,7 +247,7 @@ export default function HolidayPlanner() {
       // Queue the update operation if offline
       queueOperation({
         method: "PUT",
-        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/${id}`,
+        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/${holiday_id}`,
         body: updatedHoliday,
       });
       console.log("Offline, operation queued: Update Holiday");
