@@ -23,7 +23,7 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
     useEffect(() => {
         const fetchExistingFiles = async () => {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${holidayDetails.id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${holidayDetails.holiday_id}`);
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -39,17 +39,17 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
             }
         };
 
-        if (holidayDetails?.id) {
+        if (holidayDetails?.holiday_id) {
             fetchExistingFiles();
         }
-    }, [holidayDetails?.id]);
+    }, [holidayDetails?.holiday_id]);
 
     const handleDownload = async () => {
         try {
-            const downloadUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${holiday.id}/${holiday.name}/download`;
+            const downloadUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${holiday.holiday_id}/${holiday.holiday_name}/download`;
             const link = document.createElement("a");
             link.href = downloadUrl;
-            link.download = `${holiday.id}-files.zip`;
+            link.download = `${holiday.holiday_id}-files.zip`;
             link.click();
 
         } catch (error) {
@@ -66,7 +66,7 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
                 <div className="grid grid-cols-2 gap-6">
                     <label className="text-gray-800 font-semibold text-3xl">Holiday Name:</label>
                     <div className="flex items-center bg-blue-100 border border-blue-300 px-3 py-2">
-                        <InputBox className="invalid:read-only" value={holidayDetails.name} name="name" />
+                        <InputBox className="invalid:read-only" value={holidayDetails.holiday_name} name="name" />
                     </div>
                 </div>
 
@@ -76,7 +76,7 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
                         Where would you like to travel?
                     </label>
                     <div className="flex items-center bg-blue-100 border border-blue-300 px-3 py-2">
-                        <InputBox value={holidayDetails.destination} disabled name="destination" />
+                        <InputBox value={holidayDetails.holiday_destination} disabled name="destination" />
                     </div>
                 </div>
 
@@ -87,11 +87,11 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
                         <div className="grid grid-cols-2 gap-25 items-center">
                             <div className="pl-8">
                                 <RadioMenu options={["Car", "Plane", "Train", "Bus", "Ship"]}
-                                    value={holidayDetails.transport}
+                                    value={holidayDetails.holiday_transport}
                                     disabled
                                     name="transport" />
                             </div>
-                            <MiddleInputBox text="Price" value={holidayDetails.transport_price} disabled />
+                            <MiddleInputBox text="Price" value={holidayDetails.holiday_transport_price} disabled />
                         </div>
                     </div>
                 </div>
@@ -101,8 +101,8 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
                     <label className="text-gray-800 font-semibold text-3xl">Travel Dates:</label>
                     <div className="flex bg-blue-100 border border-blue-300 px-3 py-2">
                         <Calendar
-                            startDate={holidayDetails.startDate}
-                            endDate={holidayDetails.endDate}
+                            startdate={holidayDetails.holiday_start_date}
+                            enddate={holidayDetails.holiday_end_date}
                             disabled
                         />
                     </div>
@@ -115,14 +115,14 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
                         <div className="grid grid-cols-2 gap-15">
                             <div className="pl-3">
                                 <RadioMenu options={["Hotel", "Motel", "Hostel", "Apartment", "Cabin", "Resort", "Villa", "Campsite"]}
-                                    value={holidayDetails.accommodation}
+                                    value={holidayDetails.holiday_accommodation}
                                     disabled
-                                    name="accommodation" />
+                                    name="holiday_accommodation" />
                             </div>
                             <div>
-                                <MiddleInputBox text="Price" value={holidayDetails.accommodation_price} disabled />
-                                <MiddleInputBox text="Name" value={holidayDetails.accommodation_name} disabled />
-                                <MiddleInputBox text="Location" value={holidayDetails.accommodation_location} disabled />
+                                <MiddleInputBox text="Price" value={holidayDetails.holiday_accommodation_price} disabled />
+                                <MiddleInputBox text="Name" value={holidayDetails.holiday_accommodation_name} disabled />
+                                <MiddleInputBox text="Location" value={holidayDetails.holiday_accommodation_location} disabled />
                             </div>
                         </div>
                     </div>

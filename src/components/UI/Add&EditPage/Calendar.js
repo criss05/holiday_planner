@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 
-export default function Calendar({ startDate, endDate, onChange, minDate }) {
+export default function Calendar({ holiday_start_date, holiday_end_date, onChange, minDate }) {
     const formatDate = (date) =>
         date ? date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "";
 
@@ -12,8 +12,8 @@ export default function Calendar({ startDate, endDate, onChange, minDate }) {
             <div>
                 <label className="block text-gray-700 font-semibold mb-2">Start Date: </label>
                 <DatePicker
-                    selected={startDate ? new Date(startDate) : null}
-                    onChange={(date) => onChange({ startDate: formatDate(date), endDate })}
+                    selected={holiday_start_date ? new Date(holiday_start_date) : null}
+                    onChange={(date) => onChange({ holiday_start_date: formatDate(date), holiday_end_date })}
                     minDate={minDate}
                     dateFormat="MMMM d, yyyy"
                     className="p-2 border-2 border-[#A7CFFF] rounded-md w-full"
@@ -22,9 +22,9 @@ export default function Calendar({ startDate, endDate, onChange, minDate }) {
             <div>
                 <label className="block text-gray-700 font-semibold mb-2">End Date: </label>
                 <DatePicker
-                    selected={endDate ? new Date(endDate) : null}
-                    minDate={startDate ? new Date(startDate) : new Date()}
-                    onChange={(date) => onChange({ startDate, endDate: formatDate(date) })}
+                    selected={holiday_end_date ? new Date(holiday_end_date) : null}
+                    minDate={holiday_start_date ? new Date(holiday_start_date) : minDate}
+                    onChange={(date) => onChange({ holiday_start_date, holiday_end_date: formatDate(date) })}
                     dateFormat="MMMM d, yyyy"
                     className="p-2 border-2 border-[#A7CFFF] rounded-md w-full"
                 />

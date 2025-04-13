@@ -29,29 +29,29 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
 
     const validateForm = () => {
         const {
-            name,
-            destination,
-            startDate,
-            endDate,
-            transport,
-            transport_price,
-            accommodation,
-            accommodation_name,
-            accommodation_price,
-            accommodation_location,
+            holiday_name,
+            holiday_destination,
+            holiday_start_date,
+            holiday_end_date,
+            holiday_transport,
+            holiday_transport_price,
+            holiday_accommodation,
+            holiday_accommodation_name,
+            holiday_accommodation_price,
+            holiday_accommodation_location,
         } = editedHoliday;
 
-        if (!name || !destination || !startDate || !endDate || !transport || !accommodation || !accommodation_name || !accommodation_location) {
+        if (!holiday_name || !holiday_destination || !holiday_start_date || !holiday_end_date || !holiday_transport || !holiday_accommodation || !holiday_accommodation_name || !holiday_accommodation_location) {
             alert("All fields must be filled out.");
             return false;
         }
 
-        if (!isValidPrice(transport_price) || !isValidPrice(accommodation_price)) {
+        if (!isValidPrice(holiday_transport_price) || !isValidPrice(holiday_accommodation_price)) {
             alert("Price fields must be valid numbers.");
             return false;
         }
 
-        if (new Date(startDate) - new Date(endDate) > 0) {
+        if (new Date(holiday_start_date) - new Date(holiday_end_date) > 0) {
             alert("End date cannot be before the start date");
             return false;
         }
@@ -62,7 +62,7 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
     useEffect(() => {
         const fetchExistingFiles = async () => {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${editedHoliday.id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${editedHoliday.holiday_id}`);
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -78,10 +78,10 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
             }
         };
 
-        if (editedHoliday?.id) {
+        if (editedHoliday?.holiday_id) {
             fetchExistingFiles();
         }
-    }, [editedHoliday?.id]);
+    }, [editedHoliday?.holiday_id]);
 
 
     const handleFileChange = (e) => {
@@ -119,17 +119,17 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
     
         try {
             await handleUpdateHoliday(
-                editedHoliday.id,
-                editedHoliday.name,
-                editedHoliday.destination,
-                editedHoliday.startDate,
-                editedHoliday.endDate,
-                editedHoliday.transport,
-                editedHoliday.transport_price,
-                editedHoliday.accommodation,
-                editedHoliday.accommodation_name,
-                editedHoliday.accommodation_price,
-                editedHoliday.accommodation_location
+                editedHoliday.holiday_id,
+                editedHoliday.holiday_name,
+                editedHoliday.holiday_destination,
+                editedHoliday.holiday_start_date,
+                editedHoliday.holiday_end_date,
+                editedHoliday.holiday_transport,
+                editedHoliday.holiday_transport_price,
+                editedHoliday.holiday_accommodation,
+                editedHoliday.holiday_accommodation_name,
+                editedHoliday.holiday_accommodation_price,
+                editedHoliday.holiday_accommodation_location
             );
         } catch (error) {
             console.warn("Failed to update holiday:", error);
@@ -141,7 +141,7 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
     const savePendingEditLocally = () => {
         const pendingEdits = JSON.parse(localStorage.getItem("pendingEdits")) || [];
     
-        const updatedEdits = pendingEdits.filter(edit => edit.id !== editedHoliday.id); // Avoid duplicates
+        const updatedEdits = pendingEdits.filter(edit => edit.holiday_id !== editedHoliday.holiday_id); // Avoid duplicates
     
         updatedEdits.push(editedHoliday);
         localStorage.setItem("pendingEdits", JSON.stringify(updatedEdits));
@@ -159,7 +159,7 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
         });
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/upload/${editedHoliday.id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/upload/${editedHoliday.holiday_id}`, {
                 method: "POST",
                 body: formData,
             });
@@ -191,9 +191,9 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
                 <div className="grid grid-cols-2 gap-6">
                     <label className="text-gray-800 font-semibold text-3xl">Holiday Name:</label>
                     <div className="flex items-center bg-blue-100 border border-blue-300 px-3 py-2">
-                        <InputBox value={editedHoliday.name}
-                            onChange={(value) => updateHoliday("name", value)}
-                            name="name"
+                        <InputBox value={editedHoliday.holiday_name}
+                            onChange={(value) => updateHoliday("holiday_name", value)}
+                            name="holiday_name"
                         />
                     </div>
                 </div>
@@ -205,9 +205,9 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
                     </label>
                     <div className="flex items-center bg-blue-100 border border-blue-300 px-3 py-2">
                         <FaMapMarkedAlt className="mr-2 text-2xl" />
-                        <InputBox value={editedHoliday.destination}
-                            onChange={(value) => updateHoliday("destination", value)}
-                            name="destination"
+                        <InputBox value={editedHoliday.holiday_destination}
+                            onChange={(value) => updateHoliday("holiday_destination", value)}
+                            name="holiday_destination"
                         />
                     </div>
                 </div>
@@ -219,13 +219,13 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
                         <div className="grid grid-cols-2 gap-25 items-center">
                             <div className="pl-8">
                                 <RadioMenu options={["Car", "Plane", "Train", "Bus", "Ship"]}
-                                    value={editedHoliday.transport}
-                                    onChange={(value) => updateHoliday("transport", value)}
-                                    name="transport" />
+                                    value={editedHoliday.holiday_transport}
+                                    onChange={(value) => updateHoliday("holiday_transport", value)}
+                                    name="holiday_transport" />
                             </div>
                             <MiddleInputBox text="Price"
-                                value={editedHoliday.transport_price}
-                                onChange={(e) => updateHoliday("transport_price", e.target.value)} />
+                                value={editedHoliday.holiday_transport_price}
+                                onChange={(e) => updateHoliday("holiday_transport_price", e.target.value)} />
                         </div>
                     </div>
                 </div>
@@ -235,11 +235,11 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
                     <label className="text-gray-800 font-semibold text-3xl">Travel Dates:</label>
                     <div className="flex bg-blue-100 border border-blue-300 px-3 py-2">
                         <Calendar
-                            startDate={editedHoliday.startDate}
-                            endDate={editedHoliday.endDate}
+                            holiday_start_date={editedHoliday.holiday_start_date}
+                            holiday_end_date={editedHoliday.holiday_end_date}
                             onChange={(dates) => {
-                                updateHoliday("startDate", dates.startDate);
-                                updateHoliday("endDate", dates.endDate);
+                                updateHoliday("holiday_start_date", dates.holiday_start_date);
+                                updateHoliday("holiday_end_date", dates.holiday_end_date);
 
                             }}
                             minDate={null}
@@ -254,25 +254,25 @@ export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHo
                         <div className="grid grid-cols-2 gap-15">
                             <div className="pl-3">
                                 <RadioMenu options={["Hotel", "Motel", "Hostel", "Apartment", "Cabin", "Resort", "Villa", "Campsite"]}
-                                    value={editedHoliday.accommodation}
-                                    onChange={(value) => updateHoliday("accommodation", value)}
-                                    name="accommodation" />
+                                    value={editedHoliday.holiday_accommodation}
+                                    onChange={(value) => updateHoliday("holiday_accommodation", value)}
+                                    name="holiday_accommodation" />
                             </div>
                             <div>
                                 <MiddleInputBox
                                     text="Price"
-                                    value={editedHoliday.accommodation_price}
-                                    onChange={(e) => updateHoliday("accommodation_price", e.target.value)}
+                                    value={editedHoliday.holiday_accommodation_price}
+                                    onChange={(e) => updateHoliday("holiday_accommodation_price", e.target.value)}
                                 />
                                 <MiddleInputBox
                                     text="Name"
-                                    value={editedHoliday.accommodation_name}
+                                    value={editedHoliday.holiday_accommodation_name}
                                     onChange={(e) => updateHoliday("accommodation_name", e.target.value)}
                                 />
                                 <MiddleInputBox
                                     text="Location"
-                                    value={editedHoliday.accommodation_location}
-                                    onChange={(e) => updateHoliday("accommodation_location", e.target.value)}
+                                    value={editedHoliday.holiday_accommodation_location}
+                                    onChange={(e) => updateHoliday("holiday_accommodation_location", e.target.value)}
                                 />
                             </div>
                         </div>

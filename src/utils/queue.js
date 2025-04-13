@@ -32,7 +32,8 @@ export const processQueue = async () => {
         }
       } catch (error) {
         console.warn(`Failed to sync operation: ${JSON.stringify(op)}, Error:`, error);
-        newQueue.push(op); // Requeue the operation for later retry
+        localStorage.clear();
+        return;
       }
     }
   

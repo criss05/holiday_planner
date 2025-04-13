@@ -12,8 +12,8 @@ ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale)
 export default function FilterMenu({ isVisible, onFilterChange, holidays, setHolidays }) {
   if (!isVisible) return null;
 
-  const doneHolidays = useMemo(() => holidays.filter((holiday) => new Date(holiday.endDate) <= new Date()), [holidays]);
-  const upcomingHolidays = useMemo(() => holidays.filter((holiday) => new Date(holiday.endDate) > new Date()), [holidays]);
+  const doneHolidays = useMemo(() => holidays.filter((holiday) => new Date(holiday.holiday_end_date) <= new Date()), [holidays]);
+  const upcomingHolidays = useMemo(() => holidays.filter((holiday) => new Date(holiday.holiday_end_date) > new Date()), [holidays]);
 
   const data = {
     labels: ['Upcoming Holidays', 'Done Holidays'],
