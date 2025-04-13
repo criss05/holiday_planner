@@ -140,7 +140,7 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
                         </div>
                         
                         <div>
-                            {existingArchive.length > 0 && (
+                            {Array.isArray(existingArchive) && existingArchive.length > 0 && (
                                 <div>
                                     <h3>Existing Uploaded Files:</h3>
                                     <ul>
