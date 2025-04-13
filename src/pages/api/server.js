@@ -6,9 +6,19 @@ import path from "path";
 import fs from "fs";
 import archiver from 'archiver';
 import dotenv from "dotenv";
+import pkg from 'pg';
 dotenv.config();
 
 
+const { Pool } = pkg;
+
+const pool = new Pool({
+    user: process.env.PG_USER,
+    host: process.env.PG_HOST,
+    database: process.env.PG_DATABASE,
+    password: process.env.PG_PASSWORD,
+    port: process.env.PG_PORT,
+})
 
 const app = express();
 const PORT = 5000;
@@ -21,38 +31,36 @@ app.use(cors());
 app.use(express.json());
 
 
-let holidays = [...initialHolidays];
-
 const validateRequest = (req, res, next) => {
-    const { name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location } = req.body;
+    const { holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location } = req.body;
 
-    if (!name || !destination || !startDate || !endDate || !transport || !transport_price || !accommodation || !accommodation_name || !accommodation_price || !accommodation_location) {
+    if (!holiday_name || !holiday_destination || !holiday_start_date || !holiday_end_date || !holiday_transport || !holiday_transport_price || !holiday_accommodation || !holiday_accommodation_name || !holiday_accommodation_price || !holiday_accommodation_location) {
         return res.status(400).json({ error: "All fields are required!" });
     }
 
-    if (isNaN(Date.parse(startDate))) {
+    if (isNaN(Date.parse(holiday_start_date))) {
         return res.status(400).json({ error: "Start date is not valid" });
     }
-    if (isNaN(Date.parse(endDate))) {
+    if (isNaN(Date.parse(holiday_end_date))) {
         return res.status(400).json({ error: "End date is not valid" });
     }
-    if (new Date(startDate) - new Date(endDate) > 0) {
+    if (new Date(holiday_start_date) - new Date(holiday_end_date) > 0) {
         return res.status(400).json({ error: "End date cannot be before the start date" });
     }
 
-    if (transport_price < 0) {
+    if (holiday_transport_price < 0) {
         return res.status(400).json({ error: "Transport price cannot be negative" });
     }
 
-    if (accommodation_price < 0) {
+    if (holiday_accommodation_price < 0) {
         return res.status(400).json({ error: "accommodation price cannot be negative" });
     }
 
-    if (!["Car", "Plane", "Train", "Bus", "Ship"].includes(transport)) {
+    if (!["Car", "Plane", "Train", "Bus", "Ship"].includes(holiday_transport)) {
         return res.status(400).json({ error: "Transport can be only form the list: {'Car', 'Plane', 'Train', 'Bus', 'Ship'}" });
     }
 
-    if (!["Hotel", "Motel", "Hostel", "Apartment", "Cabin", "Resort", "Villa", "Campsite"].includes(accommodation)) {
+    if (!["Hotel", "Motel", "Hostel", "Apartment", "Cabin", "Resort", "Villa", "Campsite"].includes(holiday_accommodation)) {
         return res.status(400).json({ error: "accommodation can be only form the list: {'Hotel', 'Motel', 'Hostel', 'Apartment', 'Cabin', 'Resort', 'Villa', 'Campsite'}" });
     }
     next();
@@ -62,98 +70,153 @@ app.get('/', (req, res) => {
     res.redirect('/holidays')
 })
 
-app.get("/holidays", (req, res) => {
+app.get("/holidays", async (req, res) => {
     let { filter, sortBy } = req.query;
-    let result = [...holidays];
+    
+    let baseQuery = "SELECT * FROM Holidays";
+    const now = new Date().toISOString();
 
-    if (filter) {
-        const now = new Date();
-        if (filter === "Done") {
-            result = result.filter(h => new Date(h.endDate) <= now);
-        } else if (filter === "Upcoming") {
-            result = result.filter(h => new Date(h.endDate) >= now);
-        }
+    if (filter === "Done") {
+        baseQuery += ` WHERE holiday_end_date <= '${now}'`;
+    } else if (filter === "Upcoming") {
+        baseQuery += ` WHERE holiday_end_date >= '${now}'`;
     }
 
     if (sortBy) {
-        result.sort((a, b) => {
-            if (sortBy === "Start Date") return new Date(a.startDate) - new Date(b.startDate);
-            if (sortBy === "End Date") return new Date(a.endDate) - new Date(b.endDate);
-            return a[sortBy.toLowerCase()].localeCompare(b[sortBy.toLowerCase()]); 
-        });
+        let option;
+        switch (sortBy) {
+            case "Destination":
+                option = "holiday_destination";
+                break;
+            case "Name":
+                option = "holiday_name";
+                break;
+            case "Transport":
+                option = "holiday_transport";
+                break;
+            case "End Date":
+                option = "holiday_end_date";
+                break;
+            default:
+                option = "holiday_start_date";
+        }
+        baseQuery += ` ORDER BY "${option}" ASC`;
     }
 
-    res.json(result);
+    try {
+        const result = await pool.query(baseQuery);
+
+        const formattedHolidays = result.rows.map(holiday => {
+            const formatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+            return {
+                ...holiday,
+                startdate: new Date(holiday.startdate).toLocaleDateString('en-US', formatOptions),
+                enddate: new Date(holiday.enddate).toLocaleDateString('en-US', formatOptions)
+            };
+        });
+
+        res.json(formattedHolidays);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.get("/holidays/:id", (req, res) => {
-    const holiday = holidays.find((h) => h.id === parseInt(req.params.id));
-    if (!holiday) {
-        return res.status(404).json({ error: "Holiday not found" });
+app.get("/holidays/:id", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM Holidays WHERE holiday_id = $1", [req.params.id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Holiday not found" });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-    res.json(holiday);
 })
 
 // Add a new holiday
-app.post("/holidays", validateRequest, (req, res) => {
-    const { name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location } = req.body;
-    
-    if (new Date(startDate) - new Date() < 0) {
-        return res.status(400).json({ error: "Start date cannot be in the past" });
-    }
-    
-    const newHoliday = {
-        id: Math.max(...holidays.map((h) => h.id)) + 1,
-        name,
-        destination,
-        startDate,
-        endDate,
-        transport,
-        transport_price,
-        accommodation,
-        accommodation_name,
-        accommodation_price,
-        accommodation_location
-    };
+app.post("/holidays", validateRequest, async (req, res) => {
+    const { holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location } = req.body;
 
-    holidays.push(newHoliday);
-    res.status(201).json(newHoliday);
+    try {
+        const insertQuery = `
+            INSERT INTO Holidays (holiday_name, holiday_destination, "holiday_start_date", "holiday_end_date", holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            RETURNING *`;
+        const result = await pool.query(insertQuery, [holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location]);
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 
-app.put("/holidays/:id", validateRequest, (req, res) => {
-    const { name, destination, startDate, endDate, transport, transport_price, accommodation, accommodation_name, accommodation_price, accommodation_location } = req.body;
+app.put("/holidays/:id", validateRequest, async (req, res) => {
+    const {
+        holiday_name,
+        holiday_destination,
+        holiday_start_date,
+        holiday_end_date,
+        holiday_transport,
+        holiday_transport_price,
+        holiday_accommodation,
+        holiday_accommodation_name,
+        holiday_accommodation_price,
+        holiday_accommodation_location
+    } = req.body;
 
-    const index = holidays.findIndex((h) => h.id === parseInt(req.params.id));
-    if (index === -1) {
-        return res.status(404).json({ error: "Holiday not found" });
+    try {
+        const updateQuery = `
+            UPDATE Holidays SET 
+                holiday_name = $1,
+                holiday_destination = $2,
+                holiday_start_date = $3,
+                holiday_end_date = $4,
+                holiday_transport = $5,
+                holiday_transport_price = $6,
+                holiday_accommodation = $7,
+                holiday_accommodation_name = $8,
+                holiday_accommodation_price = $9,
+                holiday_accommodation_location = $10
+            WHERE holiday_id = $11
+            RETURNING *`;
+
+        const result = await pool.query(updateQuery, [
+            holiday_name,
+            holiday_destination,
+            holiday_start_date,
+            holiday_end_date,
+            holiday_transport,
+            holiday_transport_price,
+            holiday_accommodation,
+            holiday_accommodation_name,
+            holiday_accommodation_price,
+            holiday_accommodation_location,
+            req.params.id
+        ]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Holiday not found" });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    holidays[index] = { ...holidays[index], 
-        name, 
-        destination, 
-        startDate, 
-        endDate, 
-        transport, 
-        transport_price, 
-        accommodation, 
-        accommodation_name, 
-        accommodation_price, 
-        accommodation_location };
-
-    res.status(200).json(holidays[index]);
 });
 
 
-app.delete("/holidays/:id", (req, res) => {
-    const index = holidays.findIndex((h) => h.id === parseInt(req.params.id));
-    if (index === -1) {
-        return res.status(404).json({ error: "Holiday not found" });
+app.delete("/holidays/:id", async (req, res) => {
+    try {
+        const result = await pool.query("DELETE FROM Holidays WHERE holiday_id = $1 RETURNING *", [req.params.id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Holiday not found" });
+        }
+
+        res.status(200).json("Holiday deleted successfully!");
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    holidays.splice(index, 1);
-
-    res.status(200).json("Capsule deleted succesfully!");
 });
 
 const storage = multer.diskStorage({
