@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 
-export default function Calendar({ startDate, endDate, disabled }) {
+export default function Calendar({ holiday_start_date, holiday_end_date, disabled }) {
     const formatDate = (date) =>
         date ? date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "";
 
@@ -12,7 +12,7 @@ export default function Calendar({ startDate, endDate, disabled }) {
             <div>
                 <label className="block text-gray-700 font-semibold mb-2">Start Date: </label>
                 <DatePicker
-                    selected={startDate ? new Date(startDate) : null}
+                    selected={holiday_start_date ? new Date(holiday_start_date) : null}
                     disabled={disabled}
                     minDate={new Date()}
                     dateFormat="MMMM d, yyyy"
@@ -22,8 +22,8 @@ export default function Calendar({ startDate, endDate, disabled }) {
             <div>
                 <label className="block text-gray-700 font-semibold mb-2">End Date: </label>
                 <DatePicker
-                    selected={endDate ? new Date(endDate) : null}
-                    minDate={startDate ? new Date(startDate) : new Date()}
+                    selected={holiday_end_date ? new Date(holiday_end_date) : null}
+                    minDate={holiday_start_date ? new Date(holiday_start_date) : new Date()}
                     disabled={disabled}
                     dateFormat="MMMM d, yyyy"
                     className="p-2 border-2 border-[#A7CFFF] rounded-md w-full"
