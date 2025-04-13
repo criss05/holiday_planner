@@ -253,64 +253,62 @@ const upload = multer({
     },
 });
 
-app.post("/upload/:id", upload.array("files", 100), (req, res) => {
+app.post("/upload/:id", upload.array("files", 100), async (req, res) => {
     const holidayId = parseInt(req.params.id);
 
-    if (!req.files || req.files.length === 0) {
-        return res.status(400).json({ error: "No files uploaded" });
+    try {
+        // Ensure the holiday exists
+        const holidayResult = await pool.query("SELECT * FROM Holidays WHERE holiday_id = $1", [holidayId]);
+        if (holidayResult.rows.length === 0) {
+            return res.status(404).json({ error: "Holiday not found" });
+        }
+
+        // Prepare insert query
+        const insertPromises = req.files.map((file) => {
+            const query = `
+                INSERT INTO uploaded_memories (holiday_id, filename, original_name, file_path)
+                VALUES ($1, $2, $3, $4)
+            `;
+            const values = [
+                holidayId,
+                file.filename,
+                file.originalname,
+                `/uploads/${holidayId}/${file.filename}`
+            ];
+            return pool.query(query, values);
+        });
+
+        await Promise.all(insertPromises);
+
+        res.status(201).json({
+            message: "Files uploaded and saved to database successfully",
+            holidayId,
+            files: req.files.map(file => ({
+                filename: file.filename,
+                originalName: file.originalname,
+                path: `/uploads/${holidayId}/${file.filename}`
+            }))
+        });
+    } catch (err) {
+        console.error("Upload error:", err);
+        res.status(500).json({ error: err.message });
     }
-
-    const holiday = holidays.find((h) => h.id === holidayId);
-    if (!holiday) {
-        return res.status(404).json({ error: "Holiday not found" });
-    }
-
-    // Create an array of archive metadata
-    const uploadedFilesInfo = req.files.map(file => ({
-        filename: file.filename,
-        path: `/uploads/${holidayId}/${file.filename}`,
-        originalName: file.originalname,
-        uploadedAt: new Date(),
-    }));
-
-    // If you want to store these in holiday archives array
-    holiday.archive = uploadedFilesInfo;
-
-    res.status(201).json({
-        message: "Files uploaded successfully",
-        holidayId,
-        archives: uploadedFilesInfo,
-    });
 });
 
 
 app.use("/uploads", express.static(path.resolve("uploads")));
 
 app.get("/uploads/:holidayId", async (req, res) => {
-    const holidayId = req.params.holidayId;
-    const uploadDir = path.join("uploads", holidayId);
-
     try {
-        await fs.promises.access(uploadDir, fs.constants.F_OK);
-        
+        const result = await pool.query(
+            "SELECT * FROM uploaded_memories WHERE holiday_id = $1 ORDER BY uploaded_at DESC",
+            [req.params.holidayId]
+        );
 
-        const files = await fs.promises.readdir(uploadDir);
-        
-
-        const fileDetails = files.map((file) => ({
-            originalName: file,
-            path: `/uploads/${holidayId}/${file}`,
-        }));
-
-        return res.json({
-            holidayId,
-            files: fileDetails,
-        });
+        res.json({files: result.rows});
     } catch (err) {
-        return res.json({
-            holidayId,
-            files: [],
-        });
+        console.error("Fetch files error:", err);
+        res.status(500).json({ error: "Database error while fetching uploaded files" });
     }
 });
 
@@ -323,27 +321,26 @@ app.get("/uploads/:holidayId/:holidayName/download", async (req, res) => {
         // Check if the directory exists
         await fs.promises.access(uploadFolder, fs.constants.F_OK);
 
-        // Create a zip file stream
+        const files = await fs.promises.readdir(uploadFolder);
+        if (files.length === 0) {
+            return res.status(404).json({ error: "No files available to download" });
+        }
+
         const zipFileName = `${holidayName}-files.zip`;
-        const zip = archiver('zip', {
-            zlib: { level: 9 } // Maximum compression
-        });
+        const zip = archiver('zip', { zlib: { level: 9 } });
 
         res.attachment(zipFileName);
         zip.pipe(res);
 
-        // Read the directory and append files to the zip
-        const files = await fs.promises.readdir(uploadFolder);
         files.forEach((file) => {
             const filePath = path.join(uploadFolder, file);
-            zip.file(filePath, { name: file }); // Add file to the zip with original file name
+            zip.file(filePath, { name: file });
         });
 
-        // Finalize the archive (important step)
         zip.finalize();
-
     } catch (err) {
-        return res.status(404).json({ error: "Holiday folder not found or no files to download" });
+        console.error("Download error:", err);
+        res.status(404).json({ error: "Files not found or error zipping them" });
     }
 });
 
