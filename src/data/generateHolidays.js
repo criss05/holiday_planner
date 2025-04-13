@@ -4,13 +4,13 @@ import { faker } from "@faker-js/faker";
 
 export const generateRandomHoliday = () => {
   const holiday = {
-    name: faker.commerce.productName(),
-    destination: "CLuj-Napoca",
-    transport:"Boat",
-    startDate: faker.date.future().toISOString(),
-    endDate: faker.date.past().toISOString(),
-    transport_price: 20,
-    accommodation_price: 100
+    holiday_name: faker.commerce.productName(),
+    holiday_destination: "CLuj-Napoca",
+    holiday_transport:"Boat",
+    holiday_start_date: faker.date.future().toISOString(),
+    holiday_end_date: faker.date.past().toISOString(),
+    holiday_transport_price: 20,
+    holiday_accommodation_price: 100
   };
   return holiday;
 };
