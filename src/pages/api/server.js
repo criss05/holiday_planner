@@ -370,6 +370,30 @@ app.post("/log-connection", express.raw({ type: '*/*' }), (req, res) =>{
     res.status(200).json({ message: "Connection logged" });
 })
 
+app.get("/stats/top-holidays", async (req, res) => {
+    try {
+        const { rows } = await pool.query(`
+            SELECT 
+                h.holiday_id, 
+                h.holiday_name, 
+                h.holiday_destination, 
+                COALESCE(SUM(pg_column_size(m.file_path)), 0) AS total_size
+            FROM Holidays h
+            LEFT JOIN uploaded_memories m 
+            ON h.holiday_id = m.holiday_id
+            WHERE m.uploaded_at > CURRENT_DATE - INTERVAL '3 months'
+            GROUP BY h.holiday_id, h.holiday_name, h.holiday_destination
+            ORDER BY total_size DESC
+            LIMIT 50;
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error("Error fetching top holiday stats:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
 
 export default app;
 
