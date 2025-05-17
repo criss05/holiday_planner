@@ -1,7 +1,3 @@
-import { useState } from "react";
-
-
-
 export default function RadioMenu({ options, value, onChange, name }) {
     return (
         <form>
