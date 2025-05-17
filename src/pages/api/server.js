@@ -7,6 +7,8 @@ import fs from "fs";
 import archiver from 'archiver';
 import dotenv from "dotenv";
 import pkg from 'pg';
+import { monitorUserActivity } from "../../utils/monitorUserActivity.js";
+import logUserAction from "../../utils/logUserAction.js";
 dotenv.config();
 
 
@@ -23,7 +25,7 @@ const pool = new Pool({
 const app = express();
 const PORT = 5000;
 const uploadDir = path.join("uploads");
-if (!fs.existsSync(uploadDir)){
+if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
@@ -71,15 +73,19 @@ app.get('/', (req, res) => {
 })
 
 app.get("/holidays", async (req, res) => {
-    let { filter, sortBy } = req.query;
-    
-    let baseQuery = "SELECT * FROM Holidays";
+    let { filter, sortBy, user_id } = req.query;
+
+    if (!user_id) {
+        return res.status(204);
+    }
+
+    let baseQuery = `SELECT * FROM Holidays WHERE user_id = ${user_id}`;
     const now = new Date().toISOString();
 
     if (filter === "Done") {
-        baseQuery += ` WHERE holiday_end_date <= '${now}'`;
+        baseQuery += ` AND holiday_end_date <= '${now}'`;
     } else if (filter === "Upcoming") {
-        baseQuery += ` WHERE holiday_end_date >= '${now}'`;
+        baseQuery += ` AND holiday_end_date >= '${now}'`;
     }
 
     if (sortBy) {
@@ -123,11 +129,13 @@ app.get("/holidays", async (req, res) => {
 
 app.get("/holidays/:id", async (req, res) => {
     try {
+        const user_id = req.headers["x-user-id"];
         const result = await pool.query("SELECT * FROM Holidays WHERE holiday_id = $1", [req.params.id]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: "Holiday not found" });
         }
         res.json(result.rows[0]);
+        await logUserAction(user_id, "FETCH_CAPSULE_BY_ID");
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -135,14 +143,14 @@ app.get("/holidays/:id", async (req, res) => {
 
 // Add a new holiday
 app.post("/holidays", validateRequest, async (req, res) => {
-    const { holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location } = req.body;
+    const { holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location, user_id } = req.body;
 
     try {
         const insertQuery = `
-            INSERT INTO Holidays (holiday_name, holiday_destination, "holiday_start_date", "holiday_end_date", holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            INSERT INTO Holidays (holiday_name, holiday_destination, "holiday_start_date", "holiday_end_date", holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location, user_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING *`;
-        const result = await pool.query(insertQuery, [holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location]);
+        const result = await pool.query(insertQuery, [holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location, user_id]);
         res.status(201).json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -305,7 +313,7 @@ app.get("/uploads/:holidayId", async (req, res) => {
             [req.params.holidayId]
         );
 
-        res.json({files: result.rows});
+        res.json({ files: result.rows });
     } catch (err) {
         console.error("Fetch files error:", err);
         res.status(500).json({ error: "Database error while fetching uploaded files" });
@@ -344,7 +352,7 @@ app.get("/uploads/:holidayId/:holidayName/download", async (req, res) => {
     }
 });
 
-app.post("/log-connection", express.raw({ type: '*/*' }), (req, res) =>{
+app.post("/log-connection", express.raw({ type: '*/*' }), (req, res) => {
     let type;
 
     try {
@@ -359,7 +367,7 @@ app.post("/log-connection", express.raw({ type: '*/*' }), (req, res) =>{
         return res.status(400).json({ error: "Missing connection type" });
     }
 
-    const ip = 
+    const ip =
         req.headers["x-forwarded-for"]?.split(",")[0] ||
         req.socket.remoteAddress ||
         "Unknown IP.";
@@ -393,10 +401,88 @@ app.get("/stats/top-holidays", async (req, res) => {
     }
 });
 
+app.post("/auth/register", async (req, res) => {
+    const { email, password } = req.body;
 
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    try {
+        const existingUser = await pool.query("SELECT * FROM Users WHERE email = $1", [email]);
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ error: "Email already exists" });
+        }
+        const userRole = await pool.query(
+            "SELECT role_id FROM roles WHERE role_name = 'regular'");
+
+        const userInsert = await pool.query(
+            "INSERT INTO Users (email, password, role_id) VALUES ($1, $2, $3) RETURNING *",
+            [email, password, userRole.rows[0].role_id]
+        );
+
+        const user_id = await pool.query(
+            "SELECT user_id FROM Users WHERE email = $1 AND password = $2",
+            [email, password]
+        );
+
+        return res.status(201).json({
+            message: "User registered successfully", user: user_id.rows[0].user_id,
+        });
+    }
+    catch (error) {
+        console.error("Error registering user:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.post("/auth/login", async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    try {
+        const result = await pool.query(
+            "SELECT * FROM Users WHERE email = $1 AND password = $2",
+            [email, password]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: "Invalid email or password" });
+        }
+
+        return res.status(200).json({
+            message: "Login successful",
+            user_id: result.rows[0].user_id,
+        });
+    } catch (error) {
+        console.error("Error logging in user:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.get("/admin/admin-data", async (req, res) => {
+    const user_id = req.headers["x-user-id"];
+    const role_id = await pool.query("SELECT role_id FROM Users WHERE user_id = $1", [user_id]);
+    const role_name = await pool.query("SELECT role_name FROM roles WHERE role_id = $1", [role_id.rows[0].role_id]);
+    if (role_name.rows[0].role_name !== "admin") {
+        return res.status(403).json({ error: "Access denied" });
+    }
+    const result = await pool.query("SELECT u.user_id, u.email, m.monitored_at FROM monitored_users m JOIN users u on U.user_id = m.user_id");
+    res.json(result.rows);
+});
+
+const MONITOR_INTERVAL = 1 * 60 * 1000;
+
+setInterval(() => {
+    monitorUserActivity();
+    console.log("Checking user activity...");
+}, MONITOR_INTERVAL);
 
 export default app;
 
-if(process.env.NODE_ENV !== "test")
+if (process.env.NODE_ENV !== "test")
     /* istanbul ignore next */
     app.listen(PORT, () => console.log(`Server running on ${process.env.NEXT_PUBLIC_API_BASE_URL}`));

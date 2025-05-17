@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Header from "@/components/UI/HomePage/HeaderHome";
 import SortDropdown from "@/components/UI/HomePage/SortDropdown";
 import HolidayGrid from "@/components/Holidays/HomePage/HolidayGrid";
@@ -9,7 +9,8 @@ import EditPage from "./EditPage";
 import DetailsPage from "./DetailsPage";
 import Pagination from "@/components/UI/HomePage/Pagination";
 import { getQueue, saveQueue, queueOperation, processQueue } from "@/utils/queue";
-
+import LoginModal from "@/components/UI/Forms/LoginModal";
+import RegisterModal from "@/components/UI/Forms/RegisterModal";
 
 export default function HolidayPlanner() {
   const [sortBy, setSortBy] = useState("Start Date");
@@ -29,10 +30,38 @@ export default function HolidayPlanner() {
   const [isNetworkOnline, setIsNetworkOnline] = useState(true);
   const [isServerOnline, setIsServerOnline] = useState(true);
 
+  const [isLoginModalVisible, setIsLoginModalVisible] = useState(true);
+  const [isRegisterModalVisible, setIsRegisterModalVisible] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminData, setAdminData] = useState(null);
+  const userIdRef = useRef(null);
+
+  const checkIfAdmin = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/admin-data`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-ID": userIdRef.current,
+        }
+      },);
+      if (res.ok) {
+        const data = await res.json();
+        setIsAdmin(true);
+        setAdminData(data);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      setIsAdmin(false);
+    }
+  }
+
   useEffect(() => {
     const logConnection = async (type) => {
       try {
-        await fetch("http://localhost:5000/log-connection", {
+        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/log-connection`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -50,7 +79,7 @@ export default function HolidayPlanner() {
 
     const handleBeforeUnload = () => {
       navigator.sendBeacon(
-        "http://localhost:5000/log-connection",
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/log-connection`,
         JSON.stringify({ type: "disconnect" })
       );
     };
@@ -75,7 +104,7 @@ export default function HolidayPlanner() {
 
     const pingServer = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/`);
         setIsServerOnline(response.ok);
       } catch {
         setIsServerOnline(false);
@@ -102,9 +131,11 @@ export default function HolidayPlanner() {
 
 
   useEffect(() => {
-    fetchHolidays();
-  }, [filter, sortBy]
-  );
+    if (userIdRef.current) {
+      checkIfAdmin();
+      fetchHolidays();
+    }
+  }, [userIdRef.current, filter, sortBy]);
 
   const fetchHolidays = async () => {
     console.log(isNetworkOnline, isServerOnline);
@@ -112,9 +143,9 @@ export default function HolidayPlanner() {
       console.log("You are offline. Skipping fetch.");
       return;
     }
-
+    console.log("userId: ", userIdRef.current);
     try {
-      let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays?filter=${filter}&sortBy=${sortBy}`;
+      let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays?filter=${filter}&sortBy=${sortBy}&user_id=${userIdRef.current}`;
 
       const response = await fetch(url);
       if (!response.ok) {
@@ -261,62 +292,145 @@ export default function HolidayPlanner() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentHolidays = holidays.slice(indexOfFirstItem, indexOfLastItem);
 
+  const generateSpam = async () => {
+    try {
+      for (let i = 0; i < 500; i++) {
+        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/holidays/100037`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "X-User-ID": userIdRef.current,
+          },
+        });
+      }
+    }
+    catch (error) {
+      console.error("Error generating spam:", error);
+    }
+  }
+
+  if (!userIdRef.current) {
+    return (
+      <>
+        {isLoginModalVisible && (
+          <LoginModal
+            userIdRef={userIdRef}
+            setIsLoginModalVisible={setIsLoginModalVisible}
+            setIsRegisterModalVisible={setIsRegisterModalVisible}
+          />
+        )}
+        {isRegisterModalVisible && (
+          <RegisterModal
+            userIdRef={userIdRef}
+            setIsRegisterModalVisible={setIsRegisterModalVisible}
+            setIsLoginModalVisible={setIsLoginModalVisible}
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen">
-      {isEditPageVisible ? (
-        <EditPage
-          holiday={holidayToEdit}
-          setIsEditPageVisible={setIsEditPageVisible}
-          handleUpdateHoliday={handleUpdateHoliday}
-        />
-      ) : isAddPageVisible ? (
-        <AddPage
-          setIsAddPageVisible={setIsAddPageVisible}
-          handleAddHoliday={handleAddHoliday}
-          isOnline={navigator.onLine && isServerOnline}
-          queueOperation={queueOperation} />
-      ) : isDetailsPageVisible ? (
-        <DetailsPage
-          holiday={holidayToView}
-          setIsDetailsPageVisible={setIsDetailsPageVisible}
-        />
+      {isAdmin ? (
+        <div className="admin-section p-4 bg-gray-100">
+          <h2 className="text-2xl font-bold mb-4">Admin Data</h2>
+          <table className="w-full bg-white border border-gray-200 rounded-md">
+            <thead>
+              <tr>
+                <th className="border px-4 py-2">User ID</th>
+                <th className="border px-4 py-2">Email</th>
+                <th className="border px-4 py-2">Monitored At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {adminData.map((user) => (
+                <tr key={user.user_id}>
+                  <td className="border px-4 py-2">{user.user_id}</td>
+                  <td className="border px-4 py-2">{user.email}</td>
+                  <td className="border px-4 py-2">{user.monitored_at}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
-        <>{!isNetworkOnline && (
-          <div className="bg-red-500 text-white text-center p-2">
-            You are offline. Changes will be saved when you're back online.
-          </div>
-        )}
-
-          {isNetworkOnline && !isServerOnline && (
-            <div className="bg-yellow-500 text-black text-center p-2">
-              Server is unreachable. Actions are queued and will sync later.
-            </div>
-          )}
-          <Header onFilterChange={handleFilterChange} onToggleMenu={toggleMenu} isMenuVisible={isMenunVisible} holidays={holidays} setHolidays={setHolidays} />
-          <div className={`min-h-screen transition-all duration-300 ${isMenunVisible ? 'pl-64' : ''}`}>
-            <div className="flex justify-between">
-              <Pagination currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} />
-
-              <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
-            </div>
-            <HolidayGrid
-              holidays={currentHolidays}
-              onDelete={handleDeleteAction}
-              onEdit={(holiday) => {
-                setHolidayToEdit(holiday);
-                setIsEditPageVisible(true);
-              }}
-              onView={(holiday) => {
-                setHolidayToView(holiday);
-                setIsDetailsPageVisible(true);
-              }}
+        <>
+          {/* Existing Non-Admin Page Content */}
+          {isEditPageVisible ? (
+            <EditPage
+              holiday={holidayToEdit}
+              setIsEditPageVisible={setIsEditPageVisible}
+              handleUpdateHoliday={handleUpdateHoliday}
             />
-            <AddButton setIsAddPageVisible={setIsAddPageVisible} />
-          </div>
-          <DeletePopup isVisible={isDeletePopUpVisible} onClose={handleCancelDelete} onDelete={handleConfirmDelete} holidayName={holidayToDeleteName} />
+          ) : isAddPageVisible ? (
+            <AddPage
+              setIsAddPageVisible={setIsAddPageVisible}
+              handleAddHoliday={handleAddHoliday}
+              isOnline={navigator.onLine && isServerOnline}
+              queueOperation={queueOperation}
+            />
+          ) : isDetailsPageVisible ? (
+            <DetailsPage
+              holiday={holidayToView}
+              setIsDetailsPageVisible={setIsDetailsPageVisible}
+            />
+          ) : (
+            <>
+              {!isNetworkOnline && (
+                <div className="bg-red-500 text-white text-center p-2">
+                  You are offline. Changes will be saved when you're back online.
+                </div>
+              )}
+
+              {isNetworkOnline && !isServerOnline && (
+                <div className="bg-yellow-500 text-black text-center p-2">
+                  Server is unreachable. Actions are queued and will sync later.
+                </div>
+              )}
+              <Header
+                onFilterChange={handleFilterChange}
+                onToggleMenu={toggleMenu}
+                isMenuVisible={isMenunVisible}
+                holidays={holidays}
+                setHolidays={setHolidays}
+              />
+              <div className={`min-h-screen transition-all duration-300 ${isMenunVisible ? "pl-64" : ""}`}>
+                <div className="flex justify-between">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    setCurrentPage={setCurrentPage}
+                  />
+                  <button onClick={generateSpam} className="mt-10 bg-red-500 text-white px-4 py-2 rounded">
+                    SPAM
+                  </button>
+                  <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
+                </div>
+                <HolidayGrid
+                  holidays={currentHolidays}
+                  onDelete={handleDeleteAction}
+                  onEdit={(holiday) => {
+                    setHolidayToEdit(holiday);
+                    setIsEditPageVisible(true);
+                  }}
+                  onView={(holiday) => {
+                    setHolidayToView(holiday);
+                    setIsDetailsPageVisible(true);
+                  }}
+                />
+                <AddButton setIsAddPageVisible={setIsAddPageVisible} />
+              </div>
+              <DeletePopup
+                isVisible={isDeletePopUpVisible}
+                onClose={handleCancelDelete}
+                onDelete={handleConfirmDelete}
+                holidayName={holidayToDeleteName}
+              />
+            </>
+          )}
         </>
-      )
-      }
-    </div >
+      )}
+    </div>
   );
 }
