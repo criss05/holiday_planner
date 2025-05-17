@@ -1,6 +1,3 @@
-
-
-
 export default function SortDropdown({ sortBy, setSortBy }) {
 
     return (
