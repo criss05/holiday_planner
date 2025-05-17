@@ -23,6 +23,7 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
     useEffect(() => {
         const fetchExistingFiles = async () => {
             try {
+                
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${holidayDetails.holiday_id}`);
 
                 if (!response.ok) {
@@ -31,6 +32,7 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
                 }
 
                 const data = await response.json();
+                console.log("Fetching existing files for holiday ID:", data);
                 setExistingArchive(data.files);
 
             } catch (error) {
@@ -146,7 +148,7 @@ export default function DetailsPage({ holiday, setIsDetailsPageVisible }) {
                                     <ul>
                                         {existingArchive.map((file, index) => (
                                             <li key={index}>
-                                                {file.originalName}
+                                                {file.original_name}
                                             </li>
                                         ))}
                                     </ul>
