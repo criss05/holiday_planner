@@ -216,7 +216,7 @@ export default function HolidayPlanner() {
 
 
   const handleAddHoliday = async (holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location) => {
-    const body = { holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location };
+    const body = { holiday_name, holiday_destination, holiday_start_date, holiday_end_date, holiday_transport, holiday_transport_price, holiday_accommodation, holiday_accommodation_name, holiday_accommodation_price, holiday_accommodation_location, user_id: userIdRef.current };
 
     const op = {
       method: "POST",
