@@ -44,14 +44,15 @@ export default function FilterMenu({ isVisible, onFilterChange, holidays, setHol
       clearInterval(interval);
     }
     
-    if (!isVisible) {
-    return <></>;
-  }
 
     return () => {
       clearInterval(interval);
     };
   }, [isGenerating, setHolidays]);
+
+  if (!isVisible) {
+    return <></>;
+  }
 
   return (
     <div
