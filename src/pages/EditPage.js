@@ -9,7 +9,19 @@ import CancelButton from "@/components/UI/Add&EditPage/CancelButton";
 import { FaMapMarkedAlt, FaUpload } from "react-icons/fa";
 
 export default function EditPage({ holiday, setIsEditPageVisible, handleUpdateHoliday }) {
-    const [editedHoliday, setEditedHoliday] = useState(holiday);
+    const [editedHoliday, setEditedHoliday] = useState(holiday || {
+    holiday_name: "",
+    holiday_destination: "",
+    holiday_start_date: "",
+    holiday_end_date: "",
+    holiday_transport: "",
+    holiday_transport_price: "",
+    holiday_accommodation: "",
+    holiday_accommodation_name: "",
+    holiday_accommodation_price: "",
+    holiday_accommodation_location: "",
+    });
+
     const [uploadedFile, setUploadedFile] = useState([]);
     const [uploadError, setUploadError] = useState(null);
     const [existingArchive, setExistingArchive] = useState([]);
