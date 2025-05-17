@@ -379,7 +379,7 @@ export default function HolidayPlanner() {
             <>
               {!isNetworkOnline && (
                 <div className="bg-red-500 text-white text-center p-2">
-                  You are offline. Changes will be saved when you're back online.
+                  You are offline. Changes will be saved when you are back online.
                 </div>
               )}
 
